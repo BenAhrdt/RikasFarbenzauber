@@ -1,5 +1,10 @@
 # Änderungen
 
+## 0.5.5
+
+- Hoch-/Querformat direkt im Editor wählbar; Räume, Orte und Szenen starten im Querformat.
+- Druckfläche passt vollständig und proportional auf eine A4-Seite.
+
 ## 0.5.4
 
 - Lokaler Zugang bleibt immer über die LXC-IP auf Port 8080 erreichbar.

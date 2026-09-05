@@ -18,6 +18,10 @@ async function embedPhotos(svg){
 }
 
 export function bindExports(getDocument,getName,getMode,status){
+ const orientation=document.querySelector('#print-orientation');
+ orientation.value=getDocument().canvas.width>getDocument().canvas.height?'landscape':'portrait';
+ const setOrientation=()=>{document.body.dataset.printOrientation=orientation.value;};
+ orientation.addEventListener('change',setOrientation);setOrientation();
  const filename=()=>getName().trim().replace(/[^\p{L}\p{N}_ -]/gu,'').slice(0,80)||'Farbenzauber';
  const prepare=async()=>{const doc=JSON.parse(JSON.stringify(getDocument()));const svg=await embedPhotos(svgElement(doc,getMode()));return {doc,svg,blob:new Blob([new XMLSerializer().serializeToString(svg)],{type:'image/svg+xml;charset=utf-8'})};};
  document.querySelector('#svg').addEventListener('click',async e=>{const button=e.currentTarget;button.disabled=true;try{const result=await prepare();download(result.blob,`${filename()}.svg`);status.textContent='✓ Dein Bild ist bereit.';}catch(error){status.textContent=error.message||'Export fehlgeschlagen.';}finally{button.disabled=false;}});

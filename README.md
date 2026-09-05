@@ -131,6 +131,10 @@ Fotos liegen mit Eigentümer-ID als Binärdaten in SQLite und sind im vorhandene
 
 Beim Produktionsupdate die neue Nginx-Location für `/api/photos/` übernehmen: Nur dort gilt ein Request-Limit von 13 MB einschließlich Multipart-Daten; die übrigen API-Anfragen behalten 100 KB. App und Proxy begrenzen Uploads, Pillow prüft Format/Pixelzahl. Die Serververarbeitung ist CPU-basiert, eine GPU ist nicht nötig.
 
+## Drucken
+
+Unter **Aufs Papier → Papierausrichtung** kannst du Hochformat oder Querformat wählen und anschließend **Drucken / PDF** öffnen. Figuren starten im Hochformat, Räume, Orte und Szenen im Querformat. Die gesamte Arbeitsfläche wird proportional auf eine A4-Seite eingepasst. Farbig und Ausmalbild funktionieren in beiden Ausrichtungen.
+
 ## Entwicklung
 
 Technische Details, Entwicklungsstart, Tests und Release-Erstellung stehen in [DEVELOPMENT.md](DEVELOPMENT.md).

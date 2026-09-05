@@ -155,7 +155,17 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
             assert b'<svg' in Path(download.value.path()).read_bytes()
             page.emulate_media(media='print')
             assert page.locator('.topbar').is_hidden()
-            page.pdf(path=f'{tmp}/print.pdf',format='A4')
+            expect(page.locator('#print-orientation')).to_have_value('portrait')
+            import re
+            for orientation in ['portrait','landscape']:
+                page.locator('#print-orientation').select_option(orientation,force=True)
+                pdf=page.pdf(prefer_css_page_size=True)
+                boxes=re.findall(rb'/MediaBox\s*\[([\d. ]+)\]',pdf)
+                assert boxes, 'PDF page dimensions missing'
+                x,y,w,h=map(float,boxes[0].split())
+                assert (w>h)==(orientation=='landscape'), (orientation,w,h)
+                assert len(re.findall(rb'/Type\s*/Page\b',pdf))==1, 'Unexpected extra printed page'
+            page.locator('#print-orientation').select_option('portrait',force=True)
             page.emulate_media(media='screen')
             page.locator('#mode').select_option('color')
             page.screenshot(path='/tmp/rika-editor-tablet.png',full_page=True)
@@ -293,6 +303,15 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
                 page.locator('#png').click()
             with Image.open(photo_png.value.path()) as rendered:
                 assert any(r>245 and g<15 and b<15 for r,g,b,a in rendered.convert('RGBA').get_flattened_data()), 'Photo missing from PNG'
+            expect(page.locator('#print-orientation')).to_have_value('landscape')
+            for orientation in ['landscape','portrait']:
+                page.locator('#print-orientation').select_option(orientation)
+                pdf=page.pdf(prefer_css_page_size=True)
+                boxes=re.findall(rb'/MediaBox\s*\[([\d. ]+)\]',pdf)
+                x,y,w,h=map(float,boxes[0].split())
+                assert (w>h)==(orientation=='landscape')
+                assert len(re.findall(rb'/Type\s*/Page\b',pdf))==1
+            page.locator('#print-orientation').select_option('landscape')
             page.screenshot(path='/tmp/rika-room-tablet.png',full_page=True)
             page.set_viewport_size({'width':390,'height':844})
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')

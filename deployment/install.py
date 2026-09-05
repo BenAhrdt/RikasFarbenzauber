@@ -8,6 +8,7 @@ import re
 import secrets
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 SOURCE=Path(__file__).resolve().parent.parent
@@ -20,12 +21,19 @@ def command(args,**kwargs):subprocess.run(list(map(str,args)),check=True,**kwarg
 def write(path,text,mode=0o644):path.write_text(text);path.chmod(mode)
 def main():
     parser=argparse.ArgumentParser(description='Rikas Farbenzauber im LXC installieren (hinter HTTPS-Reverse-Proxy).')
-    parser.add_argument('--host',required=True,help='Domain ohne https://, z.B. farben.example.org')
-    parser.add_argument('--proxy-ip',required=True,help='IP-Adresse des vertrauenswürdigen HTTPS-Reverse-Proxys')
+    parser.add_argument('--host',help='Domain ohne https://, z.B. farben.example.org')
+    parser.add_argument('--proxy-ip',help='IP-Adresse des vertrauenswürdigen HTTPS-Reverse-Proxys')
     parser.add_argument('--manifest-url',default='https://github.com/BenAhrdt/RikasFarbenzauber/releases/latest/download/latest.json',help='HTTPS-URL zum Release-Manifest; optional später einrichten')
     parser.add_argument('--install-packages',action='store_true',help='Benötigte Debian/Ubuntu-Pakete mit apt installieren')
     args=parser.parse_args()
     if os.geteuid()!=0:parser.error('Bitte mit sudo/root starten.')
+    if not args.host or not args.proxy_ip:
+        if not sys.stdin.isatty():
+            parser.error('Ohne Terminal bitte --host und --proxy-ip angeben.')
+        print('Rikas Farbenzauber – LXC-Installation')
+        if not args.host:args.host=input('Domain (ohne https://): ').strip()
+        if not args.proxy_ip:args.proxy_ip=input('IP-Adresse des HTTPS-Reverse-Proxys: ').strip()
+    if sys.version_info < (3,12):parser.error('Python 3.12 oder neuer wird benötigt. Bitte einen passenden Debian-/Ubuntu-LXC verwenden.')
     os.umask(0o022) # Public code/config paths; secrets and data receive explicit restrictive modes.
     if not re.fullmatch(r'[A-Za-z0-9.-]+',args.host):parser.error('Ungültiger Hostname.')
     import ipaddress
@@ -77,6 +85,7 @@ def main():
     (ROOT/'current').symlink_to(release)
     updater=Path('/usr/local/lib/rikas-updater');updater.mkdir(parents=True,exist_ok=True)
     for name in ['runner.py','releases.py','request_update.py']:shutil.copyfile(SOURCE/'deployment'/name,updater/name)
+    write(updater/'update.sh',(SOURCE/'update.sh').read_text(),0o755)
     config={'root':str(ROOT),'state':str(updates),'database':str(data/'db.sqlite3'),'backups':str(backups),'environment':str(ENV),'manifest_url':args.manifest_url,'user':USER,'service':'rikas-farbenzauber.service','host':args.host}
     write(Path('/etc/rikas-updater.json'),json.dumps(config,indent=2)+'\n',0o600)
     unit=f'''[Unit]
@@ -104,7 +113,7 @@ Description=Rikas Farbenzauber Update Worker
 After=network-online.target
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/python3 {updater}/runner.py
+ExecStart={updater}/update.sh --worker
 TimeoutStartSec=2400
 UMask=0077
 ''')

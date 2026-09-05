@@ -64,6 +64,10 @@ def unpack(archive,destination,expected_version):
             mode=(entry.external_attr>>16)&0o170000
             if mode not in (0,0o100000,0o040000):raise ValueError('Links oder Spezialdateien sind in Updates nicht erlaubt.')
         bundle.extractall(destination)
+        # Preserve executable scripts, never special permission bits from ZIPs.
+        for entry in entries:
+            if not entry.is_dir() and (entry.external_attr >> 16) & 0o100:
+                (destination / entry.filename).chmod(0o755)
     if (destination/'VERSION').read_text().strip()!=expected_version:
         raise ValueError('Archiv und angekündigte Version stimmen nicht überein.')
     for name in ['manage.py','requirements.txt','scripts/build.sh','config/wsgi.py']:

@@ -19,7 +19,7 @@ out=Path(args.output).resolve();out.mkdir(parents=True,exist_ok=True)
 archive=out/f'rikas-farbenzauber-{v}.zip'
 # Explicit source allowlist excludes local data, environment, credentials and caches.
 folders=['config','studio','static','templates','scripts','deployment','deploy']
-files=['manage.py','VERSION','requirements.txt','requirements-dev.txt','README.md','LICENSE','CHANGELOG.md','ROADMAP.md','.env.example','.gitignore']
+files=['install.sh','update.sh','DEVELOPMENT.md','manage.py','VERSION','requirements.txt','requirements-dev.txt','README.md','LICENSE','CHANGELOG.md','ROADMAP.md','.env.example','.gitignore']
 with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as bundle:
     for name in files:bundle.write(root/name,name)
     for folder in folders:

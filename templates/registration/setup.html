@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="login-layout">
+  <div class="welcome">
+    <span class="eyebrow">WILLKOMMEN BEI RIKAS FARBENZAUBER</span>
+    <h1>Einmal einrichten.<br><em>Dann kann’s losgehen!</em></h1>
+    <p>Es gibt noch kein Admin-Konto. Lege jetzt deinen Zugang als Elternteil an. Danach kannst du in der Verwaltung Benutzer für Rika und andere Kinder hinzufügen.</p>
+    <p class="note">Diese Einrichtung ist nur einmal möglich. Weitere Konten werden danach über die angemeldete Verwaltung angelegt.</p>
+  </div>
+  <div class="login-card">
+    <span class="pill">✦ Erster Start</span>
+    <h2>Dein Admin-Konto</h2>
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}<div class="error" role="alert">Bitte prüfe die markierten Angaben.{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="error" role="alert">{{ field.errors }}</div>{% endif %}
+        {% if field.help_text %}<div class="note">{{ field.help_text|safe }}</div>{% endif %}
+      {% endfor %}
+      <button class="primary wide">Admin anlegen & starten →</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

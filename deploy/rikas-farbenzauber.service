@@ -1,0 +1,20 @@
+[Unit]
+Description=Rikas Farbenzauber
+After=network.target
+
+[Service]
+User=ben
+Group=ben
+WorkingDirectory=/home/ben/RikasFarbenzauber
+EnvironmentFile=/home/ben/RikasFarbenzauber/.env
+ExecStart=/home/ben/RikasFarbenzauber/.venv/bin/gunicorn config.wsgi:application --bind 127.0.0.1:8000 --workers 2 --access-logfile - --error-logfile -
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ben/RikasFarbenzauber/data
+
+[Install]
+WantedBy=multi-user.target

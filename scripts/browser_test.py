@@ -365,13 +365,19 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
             update_state={'state':'idle','progress':0,'message':'Bereit.'}
             page.route('**/verwaltung/updates/status/',lambda route:route.fulfill(json=update_state))
             page.route('**/verwaltung/updates/check/',lambda route:route.fulfill(json={'available':True,'install_enabled':True,'release':{'version':'9.0.0','notes':'Browser-Test'}}))
-            page.route('**/verwaltung/updates/install/',lambda route:route.fulfill(status=202,json={'job':'browser-job','version':'9.0.0'}))
+            pending_update=[]
+            page.route('**/verwaltung/updates/install/',lambda route:pending_update.append(route))
             page.goto('http://127.0.0.1:8765/verwaltung/updates/')
             page.locator('#check-update').click()
             expect(page.locator('#release-version')).to_have_text('Version 9.0.0')
             page.locator('#install-update').click()
             update_state.update(state='running',job='browser-job',progress=60,message='Datenbank wird gesichert …')
             page.get_by_role('dialog').get_by_role('button',name='Update starten',exact=True).click()
+            expect(page.locator('#update-status')).to_have_text('Update wird angefordert. Die Release-Quelle wird geprüft …')
+            expect(page.locator('#update-progress')).to_be_visible()
+            page.wait_for_timeout(200)
+            assert pending_update, 'Update request missing after confirmation'
+            pending_update[0].fulfill(status=202,json={'job':'browser-job','version':'9.0.0'})
             expect(page.locator('#update-bar')).to_have_attribute('value','60')
             page.screenshot(path='/tmp/rika-update-progress.png',full_page=True)
             update_state.update(state='success',progress=100,message='Update erfolgreich installiert.')

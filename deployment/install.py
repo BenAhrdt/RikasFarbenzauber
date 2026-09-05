@@ -60,7 +60,9 @@ def main():
     shutil.copytree(SOURCE,release,ignore=shutil.ignore_patterns('.git','.venv','.env','.agents','.codex','data','staticfiles','__pycache__','*.pyc','node_modules','dist','test-results'))
     STATE.mkdir(mode=0o755)
     data=STATE/'data';data.mkdir(mode=0o700);os.chown(data,account.pw_uid,account.pw_gid)
-    updates=STATE/'updates';updates.mkdir(mode=0o770);os.chown(updates,0,account.pw_gid)
+    updates=STATE/'updates';updates.mkdir(mode=0o770);updates.chmod(0o770);os.chown(updates,0,account.pw_gid)
+    # mkdir's mode is filtered by umask 022; restore group write explicitly.
+    updates.chmod(0o770)
     backups=STATE/'backups';backups.mkdir(mode=0o700)
     (release/'data').symlink_to(data)
     environment={

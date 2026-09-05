@@ -1,5 +1,11 @@
 # Änderungen
 
+## 0.5.6
+
+- Schreibrecht der App-Gruppe im Update-Verzeichnis explizit gesetzt; umask darf Update-Anforderungen nicht verhindern.
+- Sofortige sichtbare Rückmeldung nach Update-Bestätigung und Hinweis bei wartendem Update-Dienst.
+- Fehler beim Anlegen der Update-Anforderung werden im Dienstprotokoll aufgezeichnet.
+
 ## 0.5.5
 
 - Hoch-/Querformat direkt im Editor wählbar; Räume, Orte und Szenen starten im Querformat.

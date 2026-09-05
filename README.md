@@ -62,6 +62,17 @@ Beide Wege verwenden denselben Dienst. Bei neuen Installationen ruft dieser eine
 
 Installationen aus 0.5.1 behalten ihren vorhandenen Update-Dienst und können darüber weiterhin aktualisieren. Der bisherige Dienst ruft den gleichen Python-Updater direkt auf. Root-eigene Dienstdateien werden aus Sicherheitsgründen nicht automatisch durch Release-Code überschrieben.
 
+### Update-Dienst startet nach Bestätigung nicht (Installationen bis 0.5.5)
+
+Wenn `/var/lib/rikas-farbenzauber/updates` der Gruppe `rikas` gehört, aber nur `drwxr-x---` statt `drwxrwx---` hat, konnte die App keine Update-Anforderung schreiben. Einmalig als root im LXC korrigieren:
+
+```bash
+chown root:rikas /var/lib/rikas-farbenzauber/updates
+chmod 0770 /var/lib/rikas-farbenzauber/updates
+```
+
+Danach in der Verwaltung erneut nach Updates suchen und installieren. Ein Neustart ist dafür nicht nötig. Ab 0.5.6 setzt der Installer die Rechte ausdrücklich unabhängig von der umask.
+
 ## Betrieb und Sicherungen
 
 - Datenbank einschließlich Fotos: `/var/lib/rikas-farbenzauber/data/db.sqlite3`.

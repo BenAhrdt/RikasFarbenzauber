@@ -33,6 +33,7 @@ class InstallationTests(SimpleTestCase):
             self.assertIn('/usr/local/lib/rikas-updater/update.sh --worker',unit)
             wrapper=root/'usr/local/lib/rikas-updater/update.sh'
             self.assertTrue(os.access(wrapper,os.X_OK))
+            self.assertEqual((root/'state/updates').stat().st_mode & 0o777,0o770, 'App group must be able to publish update requests despite umask')
             self.assertIn('runner.py',wrapper.read_text())
             nginx=(root/'etc/nginx/sites-available/rikas-farbenzauber').read_text()
             self.assertIn('listen 8080 default_server',nginx)
@@ -40,5 +41,6 @@ class InstallationTests(SimpleTestCase):
             self.assertNotIn('deny all',nginx)
             self.assertTrue((root/'opt/app/current').is_symlink())
             self.assertEqual((root/'etc/app.env').stat().st_mode & 0o777,0o600)
+            self.assertEqual((root/'state/updates').stat().st_mode & 0o777,0o770)
             self.assertIn('RIKA_HTTPS_ORIGINS='+expected,(root/'etc/app.env').read_text())
             self.assertTrue(any(call.args[0][:2]==['apt-get','install'] for call in command.call_args_list))

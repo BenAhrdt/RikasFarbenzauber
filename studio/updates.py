@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 from pathlib import Path
@@ -51,6 +52,7 @@ def install(request):
         finally:temporary.unlink(missing_ok=True)
         return JsonResponse({'job':job,'version':release['version']},status=202)
     except Exception:
+        logging.getLogger(__name__).exception('Update-Anforderung konnte nicht angelegt werden')
         return JsonResponse({'error':'Update konnte nicht gestartet werden. Prüfe Update-Quelle und den installierten Updater-Dienst.'},status=400)
 
 @administrator

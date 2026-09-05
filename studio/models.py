@@ -48,3 +48,7 @@ class UserAccess(models.Model):
     scenes = models.BooleanField(default=True)
     photos = models.BooleanField(default=True)
     delete_projects = models.BooleanField(default=True)
+
+class SiteAccess(models.Model):
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    https_origins = models.JSONField(default=list)

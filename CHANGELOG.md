@@ -1,5 +1,12 @@
 # Änderungen
 
+## 0.5.4
+
+- Lokaler Zugang bleibt immer über die LXC-IP auf Port 8080 erreichbar.
+- Installation fragt optional nach HTTPS-Freigabe, ohne Proxy-IP oder eigene Zertifikatsverwaltung.
+- HTTPS-Adressen unter Verwaltung → Zugangsadressen sofort ändern; eigener Reverse-Proxy übernimmt TLS.
+- Separate Secure-Cookies für HTTPS und lokale HTTP-Sitzungen.
+
 ## 0.5.3
 
 - Standardinstallation richtet Caddy und HTTPS automatisch ein; nur die Domain wird abgefragt.

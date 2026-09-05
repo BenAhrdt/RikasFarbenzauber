@@ -55,3 +55,17 @@ APP_VERSION = (BASE_DIR / "VERSION").read_text().strip()
 UPDATE_MANIFEST_URL = os.environ.get("UPDATE_MANIFEST_URL", "https://github.com/BenAhrdt/RikasFarbenzauber/releases/latest/download/latest.json")
 UPDATE_STATE_DIR = Path(os.environ.get("UPDATE_STATE_DIR", str(BASE_DIR / "data/updates")))
 UPDATE_INSTALL_ENABLED = os.environ.get("UPDATE_INSTALL_ENABLED", "false").lower() == "true"
+
+# Local HTTP plus explicitly permitted HTTPS origins through the user's proxy.
+RIKA_LOCAL_ACCESS = os.environ.get('RIKA_LOCAL_ACCESS', 'false').lower() == 'true'
+RIKA_HTTPS_ORIGINS = list(filter(None, os.environ.get('RIKA_HTTPS_ORIGINS', '').split(',')))
+if RIKA_LOCAL_ACCESS:
+    ALLOWED_HOSTS = ['*']  # Validated per request by LocalAndHttps against DB + actual interfaces.
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False  # HTTPS cookies are separately named and secured per request.
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
+    CSRF_TRUSTED_ORIGINS = []  # Same-origin checks remain enabled for every permitted host.
+    MIDDLEWARE.insert(0, 'studio.site_access.LocalAndHttps')
+    # HTTP is intentional on the local interface; HTTPS uses separate Secure cookies.
+    SILENCED_SYSTEM_CHECKS = ['security.W004','security.W008','security.W012','security.W016']

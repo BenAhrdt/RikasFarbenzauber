@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
 from django.urls import path
-from studio import views, photos, administration, updates, impersonation
+from studio import views, photos, administration, updates, impersonation, site_access
 from django.views.generic import RedirectView
 urlpatterns = [
+    path('verwaltung/zugang/', site_access.configure, name='manage_access'),
     path('verwaltung/benutzer/<int:pk>/anmelden/', impersonation.start, name='impersonate_start'),
     path('verwaltung/zurueck/', impersonation.stop, name='impersonate_stop'),
     path("verwaltung/", administration.home, name="manage_home"),

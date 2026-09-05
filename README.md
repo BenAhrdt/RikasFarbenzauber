@@ -4,7 +4,7 @@ Eine selbst gehostete Kreativwerkstatt für Kinder. Die Anwendung bietet Figuren
 
 ## Installation
 
-Für einen frischen Debian-/Ubuntu-LXC mit systemd, Python 3.12 oder neuer . In der LXC-Konsole als **root** ausführen:
+Für einen frischen Debian-/Ubuntu-LXC mit systemd und Python 3.12 oder neuer. Als root:
 
 ```bash
 apt-get update
@@ -14,19 +14,32 @@ cd RikasFarbenzauber
 ./install.sh
 ```
 
-Das Skript fragt nach **Domain** (ohne `https://`). Es installiert die benötigten Pakete, richtet Datenbank, Caddy mit automatischem HTTPS, Anwendung und Update-Dienst ein und erzeugt das Secret. Als normaler Benutzer `sudo ./install.sh` verwenden.
+Die Installation fragt:
 
-Danach die Domain öffnen. DNS (A/AAAA) und die Router-/Firewall-Freigaben für TCP 80 und 443 müssen auf den LXC zeigen. Diese Einstellungen außerhalb des LXC kann das Skript nicht selbst ändern. Caddy beschafft und erneuert das Zertifikat automatisch; ein zusätzlicher Reverse-Proxy ist nicht erforderlich. [Hinweise zu automatischem HTTPS](https://caddyserver.com/docs/automatic-https). Beim ersten Aufruf legst du dein Administratorkonto an. Es gibt kein Standardpasswort. Die Dienste starten beim Neustart des LXC automatisch.
-
-Für eine unbeaufsichtigte Installation können die Angaben auch mitgegeben werden:
-
-```bash
-./install.sh --host farben.example.org
+```text
+HTTPS-Adresse freigeben? [Y/n]:
+Welche HTTPS-Adresse?
 ```
 
-Nur wenn bewusst ein vorhandener externer HTTPS-Proxy verwendet werden soll, zusätzlich `--proxy-ip IP` angeben; dann wird der bisherige Nginx-Betrieb auf Port 8080 verwendet.
+Die zweite Frage erscheint nur bei Ja. Mit Nein ist die Anwendung zunächst nur lokal erreichbar. Pakete, Nginx, Datenbank und Dienste werden automatisch eingerichtet.
 
-Vorhandene Installationen werden nicht überschrieben. Eine Entwicklungsinstallation wird nicht automatisch übernommen. Der Git-Ordner dient als Installationsquelle; die laufende Anwendung liegt unter `/opt/rikas-farbenzauber/current`.
+**Lokal immer erreichbar:** `http://LXC-IP:8080`. Dort beim ersten Aufruf den Admin anlegen. HTTPS-Freigaben lassen sich danach unter **Verwaltung → Zugangsadressen** hinzufügen, ändern oder vollständig entfernen (eine Adresse pro Zeile).
+
+Für HTTPS übernimmt dein vorhandener Reverse-Proxy das Zertifikat. Sein Ziel ist `http://LXC-IP:8080`; er muss den ursprünglichen `Host` und `X-Forwarded-Proto: https` weiterreichen. Eine Proxy-IP wird nicht benötigt. Die Anwendung akzeptiert Domainzugriffe nur für die freigegebenen HTTPS-Adressen. Lokaler HTTP-Zugang und HTTPS-Zugang verwenden getrennte Anmelde-Cookies; beim Wechsel meldest du dich einmal separat an.
+
+Die Freigabe beschränkt die akzeptierten Webadressen; sie konfiguriert weder DNS noch deinen externen Proxy und ersetzt keine Netzwerk-Firewall. Port 8080 bleibt für dein LAN beziehungsweise deinen Proxy bestimmt. Entfernst du deine gerade benutzte HTTPS-Adresse, kannst du dich weiterhin über die lokale LXC-IP anmelden.
+
+Ohne Rückfragen:
+
+```bash
+./install.sh --local-only
+# oder eine/mehrere HTTPS-Adressen vorgeben:
+./install.sh --https-address https://farben.example.org --https-address https://rika.example.org
+```
+
+Als normaler Benutzer `sudo ./install.sh` verwenden. Vorhandene Installationen werden nicht überschrieben. Der Quellordner dient als Installationsquelle; die laufende Anwendung liegt unter `/opt/rikas-farbenzauber/current`.
+
+Installationen aus älteren Versionen behalten beim Update ihre vorhandene Webserver-Konfiguration. Die neue Zugangsverwaltung benötigt `RIKA_LOCAL_ACCESS=true` in `/etc/rikas-farbenzauber.env`, einen Neustart des App-Dienstes und den lokalen Nginx-Zugang auf Port 8080 wie vom neuen Installer erzeugt. Eine bestehende Caddy- oder externe Proxy-Konfiguration wird nicht ungefragt umgestellt.
 
 ## Updates
 

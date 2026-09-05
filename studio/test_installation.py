@@ -8,6 +8,12 @@ from deployment import install
 
 class InstallationTests(SimpleTestCase):
     def test_interactive_install_generates_shared_update_service(self):
+        self.install_case(['y','https://farben.example.org'],'https://farben.example.org')
+
+    def test_local_only_install_skips_address_prompt(self):
+        self.install_case(['n'],'')
+
+    def install_case(self, answers, expected):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);source=root/'source';source.mkdir()
             (source/'VERSION').write_text('0.5.2')
@@ -20,20 +26,19 @@ class InstallationTests(SimpleTestCase):
             def sandbox_path(value):
                 p=Path(value)
                 return root/str(p).lstrip('/') if str(p).startswith(('/etc/','/usr/')) else p
-            from deployment import releases
-            with patch.object(install,'SOURCE',source), patch.object(install,'ROOT',root/'opt/app'), patch.object(install,'STATE',root/'state'), patch.object(install,'ENV',root/'etc/app.env'), patch.object(install,'Path',side_effect=sandbox_path), patch.object(install,'command') as command, patch('deployment.install.os.geteuid',return_value=0), patch('deployment.install.os.chown'), patch('deployment.install.os.umask'), patch('deployment.install.pwd.getpwnam',return_value=pwd.getpwuid(os.getuid())), patch('deployment.install.shutil.which',return_value='/bin/fixture'), patch('deployment.install.sys.argv',['install.py','--install-packages']), patch('deployment.install.sys.stdin.isatty',return_value=True), patch('builtins.input',side_effect=['farben.example.org']), patch.dict('sys.modules',{'releases':releases}):
+            from deployment import releases, access_config
+            with patch.object(install,'SOURCE',source), patch.object(install,'ROOT',root/'opt/app'), patch.object(install,'STATE',root/'state'), patch.object(install,'ENV',root/'etc/app.env'), patch.object(install,'Path',side_effect=sandbox_path), patch.object(install,'command') as command, patch('deployment.install.os.geteuid',return_value=0), patch('deployment.install.os.chown'), patch('deployment.install.os.umask'), patch('deployment.install.pwd.getpwnam',return_value=pwd.getpwuid(os.getuid())), patch('deployment.install.shutil.which',return_value='/bin/fixture'), patch('deployment.install.sys.argv',['install.py','--install-packages']), patch('deployment.install.sys.stdin.isatty',return_value=True), patch('builtins.input',side_effect=answers), patch.dict('sys.modules',{'releases':releases,'access_config':access_config}):
                 install.main()
             unit=(root/'etc/systemd/system/rikas-updater.service').read_text()
             self.assertIn('/usr/local/lib/rikas-updater/update.sh --worker',unit)
             wrapper=root/'usr/local/lib/rikas-updater/update.sh'
             self.assertTrue(os.access(wrapper,os.X_OK))
             self.assertIn('runner.py',wrapper.read_text())
-            caddy=(root/'etc/caddy/Caddyfile').read_text()
-            self.assertIn('farben.example.org {',caddy)
-            self.assertIn('reverse_proxy 127.0.0.1:8000',caddy)
-            self.assertIn('max_size 13MB',caddy)
-            self.assertFalse((root/'etc/nginx/sites-enabled/rikas-farbenzauber').exists())
+            nginx=(root/'etc/nginx/sites-available/rikas-farbenzauber').read_text()
+            self.assertIn('listen 8080 default_server',nginx)
+            self.assertIn('proxy_set_header Host $http_host',nginx)
+            self.assertNotIn('deny all',nginx)
             self.assertTrue((root/'opt/app/current').is_symlink())
             self.assertEqual((root/'etc/app.env').stat().st_mode & 0o777,0o600)
-            self.assertIn('DJANGO_ALLOWED_HOSTS=farben.example.org',(root/'etc/app.env').read_text())
+            self.assertIn('RIKA_HTTPS_ORIGINS='+expected,(root/'etc/app.env').read_text())
             self.assertTrue(any(call.args[0][:2]==['apt-get','install'] for call in command.call_args_list))

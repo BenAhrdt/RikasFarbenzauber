@@ -1,5 +1,10 @@
 # Änderungen
 
+## 0.5.3
+
+- Standardinstallation richtet Caddy und HTTPS automatisch ein; nur die Domain wird abgefragt.
+- Externer Reverse-Proxy ist optional statt Voraussetzung.
+
 ## 0.5.2
 
 - Installation direkt nach Git Clone mit `./install.sh`; Domain und Proxy-IP werden abgefragt.

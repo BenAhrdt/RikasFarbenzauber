@@ -19,33 +19,53 @@ USER='rikas'
 
 def command(args,**kwargs):subprocess.run(list(map(str,args)),check=True,**kwargs)
 def write(path,text,mode=0o644):path.write_text(text);path.chmod(mode)
+def caddy_config(host):
+    return f"""{host} {{
+    handle_path /static/* {{
+        root * {ROOT}/current/staticfiles
+        file_server
+    }}
+    handle /api/photos/ {{
+        request_body {{
+            max_size 13MB
+        }}
+        reverse_proxy 127.0.0.1:8000
+    }}
+    handle {{
+        request_body {{
+            max_size 100KB
+        }}
+        reverse_proxy 127.0.0.1:8000
+    }}
+}}
+"""
+
 def main():
-    parser=argparse.ArgumentParser(description='Rikas Farbenzauber im LXC installieren (hinter HTTPS-Reverse-Proxy).')
+    parser=argparse.ArgumentParser(description='Rikas Farbenzauber im LXC mit automatischem HTTPS installieren.')
     parser.add_argument('--host',help='Domain ohne https://, z.B. farben.example.org')
     parser.add_argument('--proxy-ip',help='IP-Adresse des vertrauenswürdigen HTTPS-Reverse-Proxys')
     parser.add_argument('--manifest-url',default='https://github.com/BenAhrdt/RikasFarbenzauber/releases/latest/download/latest.json',help='HTTPS-URL zum Release-Manifest; optional später einrichten')
     parser.add_argument('--install-packages',action='store_true',help='Benötigte Debian/Ubuntu-Pakete mit apt installieren')
     args=parser.parse_args()
     if os.geteuid()!=0:parser.error('Bitte mit sudo/root starten.')
-    if not args.host or not args.proxy_ip:
+    if not args.host:
         if not sys.stdin.isatty():
-            parser.error('Ohne Terminal bitte --host und --proxy-ip angeben.')
+            parser.error('Ohne Terminal bitte --host angeben.')
         print('Rikas Farbenzauber – LXC-Installation')
         if not args.host:args.host=input('Domain (ohne https://): ').strip()
-        if not args.proxy_ip:args.proxy_ip=input('IP-Adresse des HTTPS-Reverse-Proxys: ').strip()
     if sys.version_info < (3,12):parser.error('Python 3.12 oder neuer wird benötigt. Bitte einen passenden Debian-/Ubuntu-LXC verwenden.')
     os.umask(0o022) # Public code/config paths; secrets and data receive explicit restrictive modes.
     if not re.fullmatch(r'[A-Za-z0-9.-]+',args.host):parser.error('Ungültiger Hostname.')
     import ipaddress
-    ipaddress.ip_address(args.proxy_ip)
+    if args.proxy_ip:ipaddress.ip_address(args.proxy_ip)
     if args.manifest_url:
         from releases import https_url
         https_url(args.manifest_url)
     if ROOT.exists() or ENV.exists() or STATE.exists():parser.error('Installation existiert bereits. Verwende das Update-Skript; vorhandene Daten werden nicht überschrieben.')
     if args.install_packages:
         command(['apt-get','update'])
-        command(['apt-get','install','-y','python3','python3-venv','python3-pip','nginx','ca-certificates'])
-    for executable in ['python3','systemctl','runuser','nginx']:
+        command(['apt-get','install','-y','python3','python3-venv','python3-pip',('nginx' if args.proxy_ip else 'caddy'),'ca-certificates'])
+    for executable in ['python3','systemctl','runuser',('nginx' if args.proxy_ip else 'caddy')]:
         if not shutil.which(executable):parser.error(f'{executable} fehlt. Systempakete installieren oder --install-packages verwenden.')
     try:pwd.getpwnam(USER)
     except KeyError:command(['useradd','--system','--home-dir',str(STATE/'data'),'--shell','/usr/sbin/nologin',USER])
@@ -125,36 +145,48 @@ Unit=rikas-updater.service
 [Install]
 WantedBy=multi-user.target
 ''')
-    # A local HTTP static/API gateway for an existing external HTTPS proxy.
-    # No TLS certificate is invented or installed by this script.
-    nginx=f'''server {{
-    listen 8080;
-    server_name {args.host};
-    allow {args.proxy_ip};
-    deny all;
-    client_max_body_size 100k;
-    location /static/ {{ alias {ROOT}/current/staticfiles/; }}
-    location = /api/photos/ {{
-        client_max_body_size 13m;
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_set_header X-Real-IP $remote_addr;
+    if args.proxy_ip:
+        # A local HTTP static/API gateway for an existing external HTTPS proxy.
+        # No TLS certificate is invented or installed by this script.
+        nginx=f'''server {{
+        listen 8080;
+        server_name {args.host};
+        allow {args.proxy_ip};
+        deny all;
+        client_max_body_size 100k;
+        location /static/ {{ alias {ROOT}/current/staticfiles/; }}
+        location = /api/photos/ {{
+            client_max_body_size 13m;
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+        }}
+        location / {{
+            proxy_pass http://127.0.0.1:8000;
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+        }}
     }}
-    location / {{
-        proxy_pass http://127.0.0.1:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_set_header X-Real-IP $remote_addr;
-    }}
-}}
-'''
-    write(Path('/etc/nginx/sites-available/rikas-farbenzauber'),nginx)
-    Path('/etc/nginx/sites-enabled/rikas-farbenzauber').symlink_to('/etc/nginx/sites-available/rikas-farbenzauber')
-    command(['nginx','-t']);command(['systemctl','daemon-reload'])
-    command(['systemctl','enable','--now','rikas-farbenzauber.service','rikas-updater.path'])
-    command(['systemctl','reload','nginx'])
-    print(f'Installiert: Version {root_version}. HTTPS-Reverse-Proxy auf LXC-Port 8080 weiterleiten (Host {args.host}).')
-    print('Port 8080 per Firewall nur für den Reverse Proxy freigeben. Danach /setup/ im Browser öffnen.')
+    '''
+        write(Path('/etc/nginx/sites-available/rikas-farbenzauber'),nginx)
+        Path('/etc/nginx/sites-enabled/rikas-farbenzauber').symlink_to('/etc/nginx/sites-available/rikas-farbenzauber')
+        command(['nginx','-t']);command(['systemctl','daemon-reload'])
+        command(['systemctl','enable','--now','rikas-farbenzauber.service','rikas-updater.path'])
+        command(['systemctl','reload','nginx'])
+        print(f'Installiert: Version {root_version}. Externen HTTPS-Proxy auf LXC-Port 8080 weiterleiten.')
+    else:
+        caddy=Path('/etc/caddy/Caddyfile')
+        # Preserve the package/default or existing configuration for recovery.
+        if caddy.exists():shutil.copy2(caddy,caddy.with_name('Caddyfile.before-rikas'))
+        write(caddy, caddy_config(args.host))
+        command(['caddy','validate','--config',caddy,'--adapter','caddyfile'])
+        command(['systemctl','daemon-reload'])
+        command(['systemctl','enable','--now','rikas-farbenzauber.service','rikas-updater.path','caddy.service'])
+        command(['systemctl','reload','caddy.service'])
+        print(f'Installiert: Version {root_version}. Öffne https://{args.host}/setup/.')
+        print('Caddy richtet HTTPS automatisch ein. DNS sowie TCP 80/443 müssen auf diesen LXC zeigen.')
+        print('Bei ausstehendem Zertifikat: journalctl -u caddy -f')
     print(f'Konfiguration: {ENV}; Update-Quelle zusätzlich in /etc/rikas-updater.json.')
 if __name__=='__main__':main()

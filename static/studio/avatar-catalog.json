@@ -176,6 +176,10 @@
         [
           "stars",
           "Sternchen"
+        ],
+        [
+          "runes",
+          "Magische Zeichen"
         ]
       ],
       "default": "none"
@@ -223,6 +227,14 @@
         [
           "bald",
           "Ohne Haare"
+        ],
+        [
+          "longbraid",
+          "Langer Bühnenzopf"
+        ],
+        [
+          "twintails",
+          "Anime-Zwillingszöpfe"
         ]
       ],
       "default": "short"
@@ -285,6 +297,18 @@
         [
           "stage",
           "Bühnenjacke"
+        ],
+        [
+          "hunter",
+          "Jägerjacke"
+        ],
+        [
+          "sailor",
+          "Sailor-Oberteil"
+        ],
+        [
+          "haori",
+          "Haori"
         ]
       ],
       "default": "tee"
@@ -316,6 +340,14 @@
         [
           "flower",
           "Blume"
+        ],
+        [
+          "lightning",
+          "Blitz"
+        ],
+        [
+          "rune",
+          "Schutzzeichen"
         ]
       ],
       "default": "none"
@@ -413,6 +445,18 @@
         [
           "beret",
           "Baskenmütze"
+        ],
+        [
+          "headband",
+          "Ninja-Stirnband"
+        ],
+        [
+          "foxmask",
+          "Fuchsmaske"
+        ],
+        [
+          "horns",
+          "Dämonenhörnchen"
         ]
       ],
       "default": "none"
@@ -540,6 +584,22 @@
         [
           "ball",
           "Ball"
+        ],
+        [
+          "sword",
+          "Sternenklinge"
+        ],
+        [
+          "fan",
+          "Kampffächer"
+        ],
+        [
+          "lightstick",
+          "Lightstick"
+        ],
+        [
+          "orb",
+          "Zauberkugel"
         ]
       ],
       "default": "none"
@@ -555,6 +615,10 @@
         [
           "overear",
           "Kopfhörer"
+        ],
+        [
+          "headset",
+          "Bühnen-Headset"
         ]
       ],
       "default": "none"

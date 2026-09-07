@@ -1,5 +1,15 @@
 # Änderungen
 
+## 0.5.7 – 7. September 2026
+
+- Vier neue K-Pop-/Anime-inspirierte Figurenideen und 16 kombinierbare Optionen für Frisuren, Kleidung, magische Accessoires und Bühnenausstattung.
+- Zwölf neue Raumobjekte: Anime-Poster, Lightstick, Bühnenpodest, Scheinwerfer, Keyboard, Kopfhörer, Papierlaterne, Ramen-Schale, Katzen-Plüschtier, Gamecontroller, Schminkspiegel und Sternen-Lichterkette.
+- Figuren-Vorschau überlagert beim Scrollen auf Handy und Tablet nicht mehr das Druckmenü.
+- Drucken / PDF erzeugt eine fertige, einseitige A4-PDF in Hoch- oder Querformat mit proportional eingepasstem Bild, statt die Editor-Webseite durch den Browser umbrechen zu lassen.
+
+- PDF-Download als Ersatz bei gesperrten Vorschaufenstern, auch wenn der Browser das Öffnen mit einem Fehler ablehnt.
+- Geprüft: Speichern und Wiederöffnen, bestehende Figuren, Touch-Bedienung, mobile Layouts, Bild-/PDF-Export sowie Update und Rücknahme bei Fehlern.
+
 ## 0.5.6
 
 - Schreibrecht der App-Gruppe im Update-Verzeichnis explizit gesetzt; umask darf Update-Anforderungen nicht verhindern.

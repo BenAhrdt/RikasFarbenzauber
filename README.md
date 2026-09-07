@@ -113,7 +113,7 @@ Der Wechsel gilt für alle Tabs desselben Browserprofils. Vorher offene Bearbeit
 - Benannte Figuren serverseitig speichern und auf anderen Geräten erneut bearbeiten.
 - Konflikterkennung bei zwischenzeitlichen Änderungen auf einem anderen Gerät; eigene Dialoge vor Verlassen über App-Links/Abmelden mit ungespeicherten Änderungen.
 - Farbiges Bild oder schwarze Konturen mit weißen Ausmalflächen.
-- PNG (Figuren: 1200 × 1300, Räume/Orte/Szenen: 1800 × 1300), SVG und A4-Druckansicht. PDF über „Als PDF speichern“ im Druckdialog des Browsers.
+- PNG (Figuren: 1200 × 1300, Räume/Orte/Szenen: 1800 × 1300), SVG und einseitige A4-PDF zum Drucken.
 - App-Manifest als PWA-Vorbereitung. Kein Service Worker, kein Offline-Modus und keine Offline-Speicherwarteschlange; die Installierbarkeit hängt vom Browser ab.
 
 Noch offen sind zusätzliche individuelle Kleidungsstücke, komplexe mehrstöckige Häuser, Zoom/Schwenken, Mehrfachauswahl, Freihandmalen, Autosave und teilweise ausgemalte Bereiche. Undo/Redo ist in beiden Editoren verfügbar (60 Schritte je aktueller Sitzung). Bestätigungen verwenden eigene barrierearme HTML-Dialoge mit Fokusbindung, Escape und großen Buttons. Es gibt keine Browser-Bestätigungs-Popups. Neuladen, Browser-Zurück und Tab-Schließen lassen sich nicht mit einem eigenen asynchronen Dialog abfangen und verwerfen ungespeicherte Änderungen ohne Warnung. Nicht gespeicherte Änderungen liegen nur im Arbeitsspeicher des aktuellen Tabs; mobile Betriebssysteme können Tabs ohne Verlassen-Warnung schließen. Regelmäßig „Speichern“ antippen.
@@ -142,9 +142,17 @@ Fotos liegen mit Eigentümer-ID als Binärdaten in SQLite und sind im vorhandene
 
 Beim Produktionsupdate die neue Nginx-Location für `/api/photos/` übernehmen: Nur dort gilt ein Request-Limit von 13 MB einschließlich Multipart-Daten; die übrigen API-Anfragen behalten 100 KB. App und Proxy begrenzen Uploads, Pillow prüft Format/Pixelzahl. Die Serververarbeitung ist CPU-basiert, eine GPU ist nicht nötig.
 
+## Neue Figurenideen und Accessoires
+
+Unter **Ideen zum Starten** stehen auch Dämonenjägerin, Popstar, Mondwächterin und Fuchsninja zur Auswahl. Die K-Pop- und Anime-inspirierten Bausteine lassen sich über Haare, Kleidung, Gesicht und Accessoires frei kombinieren: zum Beispiel Bühnenzopf, Jägerjacke, Haori, Fuchsmaske, Sternenklinge, Fächer und Lightstick. Farben bleiben einzeln anpassbar; alles funktioniert auch als Ausmalbild.
+
+Räume, Orte und Szenen bieten in **Deko**, **Musik**, **Möbel** und **Spielzeug** außerdem zwölf neue Gegenstände für Bühne und Anime-Zimmer. Gespeicherte Figuren lassen sich wie bisher in Szenen hinzufügen.
+
 ## Drucken
 
-Unter **Aufs Papier → Papierausrichtung** kannst du Hochformat oder Querformat wählen und anschließend **Drucken / PDF** öffnen. Figuren starten im Hochformat, Räume, Orte und Szenen im Querformat. Die gesamte Arbeitsfläche wird proportional auf eine A4-Seite eingepasst. Farbig und Ausmalbild funktionieren in beiden Ausrichtungen.
+Unter **Aufs Papier → Papierausrichtung** kannst du Hochformat oder Querformat wählen und anschließend **Drucken / PDF** öffnen. Figuren starten im Hochformat, Räume, Orte und Szenen im Querformat. Die gesamte Arbeitsfläche wird proportional und zentriert mit 12 mm Rand auf eine A4-Seite eingepasst. Die PDF enthält das Bild mit 300 dpi und die gewählte Seitenausrichtung. Farbig und Ausmalbild funktionieren in beiden Ausrichtungen.
+
+Die fertige PDF öffnet sich in einem neuen Tab; bei blockierten Popups wird sie heruntergeladen. Auf dem iPad in der PDF **Teilen → Drucken** wählen, am Computer die Druckfunktion des PDF-Betrachters verwenden. Für verlustfreie Vektorgrafiken bleibt der SVG-Download verfügbar.
 
 ## Entwicklung
 

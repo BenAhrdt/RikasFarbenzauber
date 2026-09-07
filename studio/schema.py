@@ -5,7 +5,7 @@ from pathlib import Path
 CATALOG = json.loads((Path(__file__).resolve().parent.parent / "static/studio/avatar-catalog.json").read_text())
 
 PARTS = {"skin", "hair", "shirt", "trousers", "shoes", "eyes", "horns"}
-ASSETS = {"chair-v1", "desk-v1", "pillow-v1", "clock-v1", "books-v1", "teddy-v1", "guitar-v1", "microphone-v1", "speaker-v1", "skateboard-v1", "balloon-v1", "ball-v1", "mushroom-v1", "pond-v1", "tent-v1", "bench-v1","photo-v1","sofa-v1", "bed-v1", "table-v1", "shelf-v1", "rug-v1", "lamp-v1", "window-v1", "door-v1", "house-v1", "castle-v1", "tree-v1", "flower-v1", "cloud-v1", "rock-v1", "plant-v1", "sun-v1"}
+ASSETS = {"poster-v1", "lightstick-v1", "stage-v1", "spotlight-v1", "keyboard-v1", "headphones-v1", "lantern-v1", "ramen-v1", "catplush-v1", "gamepad-v1", "mirror-v1", "stringlights-v1", "chair-v1", "desk-v1", "pillow-v1", "clock-v1", "books-v1", "teddy-v1", "guitar-v1", "microphone-v1", "speaker-v1", "skateboard-v1", "balloon-v1", "ball-v1", "mushroom-v1", "pond-v1", "tent-v1", "bench-v1","photo-v1","sofa-v1", "bed-v1", "table-v1", "shelf-v1", "rug-v1", "lamp-v1", "window-v1", "door-v1", "house-v1", "castle-v1", "tree-v1", "flower-v1", "cloud-v1", "rock-v1", "plant-v1", "sun-v1"}
 def validate_document(doc):
     if not isinstance(doc, dict) or set(doc) != {"version", "canvas", "objects"} or type(doc["version"]) is not int or doc["version"] not in (1, 2):
         raise ValueError("Unbekanntes Projektformat.")

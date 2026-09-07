@@ -62,7 +62,7 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
             page.get_by_role('link',name='+ Neu: Figur',exact=True).click()
             expect(page.locator('body')).to_have_attribute('data-state','ready')
             expect(page.locator('[data-starter]')).to_have_count(3)
-            expect(page.locator('[data-variant]')).to_have_count(6)
+            expect(page.locator('[data-variant]')).to_have_count(10)
             expect(page.locator('#canvas [data-object]')).to_have_count(1)
             # A failed module must show a recoverable error, never a blank editor.
             page.route('**/studio/editor.js',lambda route:route.abort())
@@ -74,7 +74,7 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
             errors.clear() # Expected deliberately failed request above.
             page.locator('#app-reload').click()
             expect(page.locator('body')).to_have_attribute('data-state','ready')
-            expect(page.locator('[data-variant]')).to_have_count(6)
+            expect(page.locator('[data-variant]')).to_have_count(10)
             # Simulate the outdated cached HTML that previously broke setup.
             def stale_html(route):
                 response=route.fetch()
@@ -89,7 +89,7 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
             page.locator('#app-reload').click()
             expect(page.locator('body')).to_have_attribute('data-state','ready')
             expect(page.locator('[data-starter]')).to_have_count(3)
-            expect(page.locator('[data-variant]')).to_have_count(6)
+            expect(page.locator('[data-variant]')).to_have_count(10)
             expect(page.locator('body')).to_have_attribute('data-state','ready')
             page.locator('#project-name').fill('Rikas Sternfreund')
             page.get_by_text('Ideen zum Starten',exact=True).click()
@@ -167,7 +167,33 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
                 assert len(re.findall(rb'/Type\s*/Page\b',pdf))==1, 'Unexpected extra printed page'
             page.locator('#print-orientation').select_option('portrait',force=True)
             page.emulate_media(media='screen')
+            # The button exports an actual one-page PDF even if popups are blocked.
+            page.evaluate('window.originalOpen=window.open;window.open=()=>null')
+            for orientation in ['portrait','landscape']:
+                page.locator('#print-orientation').select_option(orientation)
+                with page.expect_download() as printed:
+                    page.locator('#print').click()
+                pdf=Path(printed.value.path()).read_bytes()
+                assert pdf.startswith(b'%PDF-1.4')
+                assert len(re.findall(rb'/Type /Page\b',pdf))==1
+                w,h=map(float,re.search(rb'/MediaBox \[0 0 ([\d.]+) ([\d.]+)\]',pdf).groups())
+                assert (w>h)==(orientation=='landscape')
+            page.evaluate("() => { window.open=()=>{throw new Error('Popup unavailable')}; }")
+            with page.expect_download() as restricted:
+                page.locator('#print').click()
+            assert Path(restricted.value.path()).read_bytes().startswith(b'%PDF-1.4')
+            expect(page.locator('#print')).to_be_enabled()
+            page.evaluate('() => { window.open=window.originalOpen; }')
+            page.locator('#print-orientation').select_option('portrait')
             page.locator('#mode').select_option('color')
+            # The preview must stay above the export panel after scrolling on mobile/tablet.
+            for width,height in [(390,844),(844,390),(768,1024),(1024,768),(1100,900)]:
+                page.set_viewport_size({'width':width,'height':height})
+                page.locator('.export-panel').scroll_into_view_if_needed()
+                workspace=page.locator('.workspace').bounding_box()
+                panel=page.locator('.export-panel').bounding_box()
+                assert workspace['y']+workspace['height'] <= panel['y'], (width,workspace,panel)
+            page.set_viewport_size({'width':1024,'height':900})
             page.screenshot(path='/tmp/rika-editor-tablet.png',full_page=True)
             page.set_viewport_size({'width':390,'height':844})
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
@@ -209,6 +235,7 @@ with tempfile.TemporaryDirectory(prefix='rika-browser-') as tmp:
             page.locator('#project-name').fill('Zauberzimmer')
             page.locator('#canvas [data-object]').first.wait_for()
             expect(page.locator('#canvas [data-object]')).to_have_count(5)
+            page.get_by_role('button',name='Sofa hinzufügen',exact=True).scroll_into_view_if_needed()
             source=page.get_by_role('button',name='Sofa hinzufügen',exact=True).bounding_box()
             target=page.locator('#canvas').bounding_box()
             page.mouse.move(source['x']+source['width']/2,source['y']+source['height']/2)

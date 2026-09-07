@@ -1,5 +1,18 @@
 // Own vector library. Every asset has three separately colorable regions.
 export const library={
+ 'poster-v1':['Anime-Poster','Deko','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'lightstick-v1':['Lightstick','Musik','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'stage-v1':['Bühnenpodest','Musik','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'spotlight-v1':['Bühnenscheinwerfer','Musik','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'keyboard-v1':['Keyboard','Musik','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'headphones-v1':['Kopfhörer','Musik','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'lantern-v1':['Papierlaterne','Deko','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'ramen-v1':['Ramen-Schale','Deko','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'catplush-v1':['Katzen-Plüschtier','Spielzeug','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'gamepad-v1':['Gamecontroller','Spielzeug','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'mirror-v1':['Schminkspiegel','Möbel','#b8a1dc','#f3dfbb','#e8a4c5'],
+ 'stringlights-v1':['Sternen-Lichterkette','Deko','#b8a1dc','#f3dfbb','#e8a4c5'],
+
  'sofa-v1':['Sofa','Möbel','#b3a1d3','#e9dff4','#786056'],
  'bed-v1':['Bett','Möbel','#a8c8d7','#f4dfb5','#947059'],
  'table-v1':['Tisch','Möbel','#ddb98f','#9c745b','#f0d3a0'],
@@ -38,6 +51,19 @@ export function paintAsset(shape,asset){
  const path=(d,part='main')=>shape('path',{d},part);
  const ellipse=(cx,cy,rx,ry,part='main')=>shape('ellipse',{cx,cy,rx,ry},part);
  switch(asset){
+ case 'poster-v1': rect(-62,-88,124,176,'detail');rect(-51,-77,102,154);ellipse(0,-23,27,33,'accent');path('M-38 56 L-28 13 L28 13 L38 56Z','accent');path('M-29-38 L-37-65 L-11-52 L4-74 L18-49 L35-60 L29-30Z','detail');break;
+ case 'lightstick-v1': rect(-12,1,24,91,'detail');ellipse(0,-33,45,45);path('M0-67 L9-43 L34-43 L14-27 L21-2 L0-17 L-21-2 L-14-27 L-34-43 L-9-43Z','accent');break;
+ case 'stage-v1': rect(-130,-15,260,64);ellipse(0,-15,130,32,'detail');for(const x of [-95,-48,0,48,95])ellipse(x,27,8,8,'accent');break;
+ case 'spotlight-v1': path('M-8 18 L-55 99 L-41 103 L0 43 L41 103 L55 99 L8 18Z','detail');rect(-52,-67,104,89);ellipse(0,-26,39,34,'detail');ellipse(0,-26,28,24,'accent');break;
+ case 'keyboard-v1': path('M-68 15 L54 100 L66 94 L-53 7Z','detail');path('M68 15 L-54 100 L-66 94 L53 7Z','detail');rect(-115,-48,230,66);rect(-104,-26,208,34,'accent');for(let x=-85;x<100;x+=21)rect(x,-26,9,20,'detail',0);break;
+ case 'headphones-v1': path('M-63 27 L-63-28 Q-63-100 0-100 Q63-100 63-28 L63 27 L48 27 L48-28 Q48-83 0-83 Q-48-83-48-28 L-48 27Z','detail');rect(-73,-12,32,70);rect(41,-12,32,70);rect(-63,0,12,45,'accent');rect(51,0,12,45,'accent');break;
+ case 'lantern-v1': rect(-3,-112,6,30,'detail');ellipse(0,-2,57,79);rect(-26,-85,52,13,'detail');rect(-26,73,52,13,'detail');path('M-17-62 Q-41 0-17 60 M17-62 Q41 0 17 60','accent');rect(-3,86,6,25,'accent');break;
+ case 'ramen-v1': path('M-77-12 Q-62 73 0 74 Q62 73 77-12Z');ellipse(0,-12,77,24,'detail');ellipse(-22,-11,21,13,'accent');ellipse(-22,-11,9,7);path('M5-16 Q17-34 25-10 Q35 9 44-13','accent');path('M22-23 L61-91 L67-87 L30-20Z','detail');path('M39-18 L84-80 L90-76 L46-15Z','detail');break;
+ case 'catplush-v1': ellipse(0,35,48,56);ellipse(-34,74,22,14,'detail');ellipse(34,74,22,14,'detail');path('M-49-19 L-56-83 L-22-58 Q0-69 22-58 L56-83 L49-19Z');ellipse(0,-18,52,43);ellipse(-20,-22,5,8,'accent');ellipse(20,-22,5,8,'accent');path('M-6-5 L6-5 L0 2Z','accent');ellipse(0,37,25,31,'detail');break;
+ case 'gamepad-v1': path('M-58-35 Q-30-47-19-27 L19-27 Q30-47 58-35 Q82-11 79 35 Q70 59 43 26 L-43 26 Q-70 59-79 35 Q-82-11-58-35Z');rect(-50,-19,10,34,'detail');rect(-62,-7,34,10,'detail');ellipse(42,-12,7,7,'accent');ellipse(57,3,7,7,'accent');ellipse(18,13,10,10,'detail');break;
+ case 'mirror-v1': rect(-6,42,12,49,'detail');ellipse(0,92,51,10,'detail');ellipse(0,-18,66,83);ellipse(0,-18,49,66,'accent');for(const [x,y]of [[0,-91],[-53,-52],[53,-52],[-54,16],[54,16],[0,54]])ellipse(x,y,6,6,'detail');path('M-25-38 L10-67 L17-59 L-18-30Z','detail');break;
+ case 'stringlights-v1': path('M-125-35 Q0 43 125-35 L125-30 Q0 48-125-30Z','detail');for(const [x,y]of [[-100,-12],[-50,7],[0,14],[50,7],[100,-12]])path(`M${x} ${y} l6 13 15 1 -11 10 3 15 -13-8 -13 8 3-15 -11-10 15-1Z`,'accent');break;
+
  case 'chair-v1': rect(-42,-92,84,94);rect(-51,-3,102,22,'detail');rect(-43,17,14,75,'detail');rect(29,17,14,75,'detail');rect(-28,-72,56,49,'accent');break;
  case 'desk-v1': rect(-105,-28,210,20);rect(-92,-8,60,98,'detail');rect(76,-8,15,98,'accent');rect(-84,3,44,32);rect(-84,44,44,32);ellipse(-62,18,4,4,'accent');ellipse(-62,60,4,4,'accent');break;
  case 'pillow-v1': path('M-68-50 Q0-39 68-50 Q55 0 68 50 Q0 39-68 50 Q-55 0-68-50Z');ellipse(0,0,24,20,'detail');path('M-12 0 L0-13 L12 0 L0 13Z','accent');break;

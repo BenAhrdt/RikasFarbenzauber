@@ -37,14 +37,19 @@ export function paintAvatar(root,o,mode){
  // Arms with connected sleeves, always behind torso.
  for(const sign of [-1,1]){const g=group(`scale(${sign} 1)`,torso);const wave=c.pose==='wave'&&sign===1,hips=c.pose==='hips';
  const d=wave?`M${shoulder-4}-18 Q100-29 96-93 L118-95 Q131-6 ${shoulder+5} 30Z`:hips?`M${shoulder}-17 Q125 15 80 63 L55 42 L78 18 L${shoulder-10} 13Z`:`M${shoulder}-17 Q90 10 94 86 Q85 104 72 87 L${shoulder-9} 17Z`;
- path(d,['hoodie','sweater','jacket','stage'].includes(c.top)?'shirt':'skin',g);ellipse(wave?107:hips?61:83,wave?-99:hips?49:89,12,15,'skin',g);
+ path(d,['hoodie','sweater','jacket','stage','hunter','haori'].includes(c.top)?'shirt':'skin',g);ellipse(wave?107:hips?61:83,wave?-99:hips?49:89,12,15,'skin',g);
  path(`M${shoulder-17}-31 L${shoulder+20}-6 L${shoulder+7} 30 L${shoulder-23} 11Z`,'shirt',g);
  }
  rect(-17,-57,34,38,'skin',torso,8);
  const dress=c.top==='dress'||c.top==='tunic';
  path(`M-${shoulder-15}-39 Q0-21 ${shoulder-15}-39 L${shoulder+5}-15 L47 23 L${dress?78:55} ${dress?135:83} Q0 ${dress?154:97}-${dress?78:55} ${dress?135:83} L-47 23 L-${shoulder+5}-15Z`,'shirt',torso);
+ if(c.top==='haori')for(const sign of [-1,1]){const g=group(`scale(${sign} 1)`,torso);path('M12-33 L49-40 L78-10 L69 127 L25 114Z','accessory',g);path('M27 0 L52 22 L27 44 L52 66 L27 88','detail',g);}
  if(c.top==='hoodie'){path('M-39-36 Q0-65 39-36 Q29 4 0-12 Q-29 4-39-36Z','detail',torso);rect(-26,46,52,25,'hairAccent',torso);line('M-12-10 L-12 20 M12-10 L12 20',torso);}
  if(['jacket','stage','vest'].includes(c.top)){path('M-34-38 L0-11 L34-38 L26 31 L0 71 L-26 31Z','detail',torso);line('M0-11 L0 86',torso);for(const x of [-35,35])rect(x-10,40,20,17,'accessory',torso);if(c.top==='stage'){star(-shoulder,-9,17,'metal',torso);star(shoulder,-9,17,'metal',torso);}}
+ if(c.top==='hunter'){path('M-35-37 L-8-16 L-21 65 L-56 79 L-48 8Z','accessory',torso);path('M35-37 L8-16 L21 65 L56 79 L48 8Z','accessory',torso);rect(-53,65,106,12,'metal',torso);star(34,-8,12,'metal',torso);line('M-38 5 L-24 15 M-42 17 L-28 27',torso);}
+ if(c.top==='sailor'){path('M-40-35 L0-15 L40-35 L31 4 L0 20 L-31 4Z','detail',torso);path('M0 15 L-27 3 L-25 33 L0 22 L25 33 L27 3Z','accessory',torso);ellipse(0,19,7,7,'metal',torso);}
+ if(c.pattern==='lightning')path('M4-2 L-23 29 L-3 29 L-12 56 L25 18 L6 18 L17-2Z','metal',torso);
+ if(c.pattern==='rune'){path('M0-2 L23 23 L0 48 L-23 23Z','horns',torso);line('M0 7 L0 39 M-13 23 L13 23',torso);}
  if(c.top==='sweater')for(const y of [62,71,80])line(`M-49 ${y} L49 ${y}`,torso);
  if(c.pattern==='star')star(0,23,21,'horns',torso);
  if(c.pattern==='heart')path('M0 43 Q-37 15-18 5 Q-4-1 0 12 Q8-5 23 7 Q38 23 0 43Z','horns',torso);
@@ -59,6 +64,8 @@ export function paintAvatar(root,o,mode){
  // Head, hair and all face accessories share one scalable coordinate system.
  const head=group(`translate(0 -113) scale(${b.head})`,whole);
  if(['long','braids','ponytail','curls'].includes(c.hair))path('M-68-37 Q-94 5-84 124 L-42 137 L-29 68 L29 68 L45 137 L89 118 Q95 0 68-37Z','hair',head);
+ if(c.hair==='longbraid'){path('M44-63 Q89-119 103-54 L79-17Z','hair',head);for(let i=0;i<8;i++)ellipse(88+Math.sin(i*.8)*9,-20+i*24,17,19,i%2?'hairAccent':'hair',head);path('M82 165 L110 165 L103 199 L91 189 L80 197Z','accessory',head);}
+ if(c.hair==='twintails')for(const sign of [-1,1]){const g=group(`scale(${sign} 1)`,head);path('M54-57 Q115-95 107-8 L121 119 L79 103 L75-23Z','hair',g);rect(66,-57,30,13,'accessory',g);path('M91-23 L101 91 L91 81Z','hairAccent',g);}
  if(c.hair==='ponytail')path('M51-60 Q139-110 109 72 L75 90 Q107-12 49-19Z','hairAccent',head);
  for(const sign of [-1,1]){const g=group(`scale(${sign} 1)`,head);if(c.ears==='elf')path('M62-10 L94-36 L82 26 L62 23Z','skin',g);else ellipse(69,7,c.ears==='small'?10:16,c.ears==='small'?17:23,'skin',g);}
  if(c.headShape==='square')rect(-65,-65,130,140,'skin',head,28);else ellipse(0,4,c.headShape==='oval'?60:69,c.headShape==='oval'?79:72,'skin',head);
@@ -88,12 +95,17 @@ export function paintAvatar(root,o,mode){
  if(c.mouth==='laugh')path('M-20 39 L20 39 Q16 70 0 64 Q-16 70-20 39Z','accessory',head);
  if(c.faceDetail==='blush')for(const x of [-43,43])ellipse(x,30,12,6,'accessory',head);
  if(c.faceDetail==='freckles')for(const sign of [-1,1])for(const [x,y]of [[30,29],[41,26],[48,32]])ellipse(x*sign,y,1.6,1.6,'hair',head);
+ if(c.faceDetail==='runes')for(const sign of [-1,1]){const g=group(`scale(${sign} 1)`,head);path('M39 21 L49 30 L39 39 L29 30Z','wings',g);path('M51 37 L59 45 L51 53 L43 45Z','hairAccent',g);}
  if(c.faceDetail==='stars')for(const x of [-44,44])star(x,28,8,'metal',head);
  if(c.glasses!=='none'){
   for(const sign of [-1,1]){const g=group(`scale(${sign} 1)`,head);if(c.glasses==='heart')path('M28 23 Q-3 0 13-10 Q25-17 28-6 Q34-19 47-9 Q61 5 28 23Z','accessory',g);else if(c.glasses==='round')node('circle',{cx:29,cy:7,r:22,fill:'none',stroke:mode==='outline'?'#000000':o.colors.accessory,'stroke-width':5},g);else {if(c.glasses==='sun')rect(9,-12,43,32,'eyes',g,8);else node('rect',{x:8,y:-12,width:44,height:35,rx:6,fill:'none',stroke:mode==='outline'?'#000000':o.colors.accessory,'stroke-width':5},g);} }
   line('M-7 3 Q0-3 7 3',head);
  }
  if(c.earrings!=='none')for(const x of [-75,75]){if(c.earrings==='stars')star(x,39,11,'metal',head);else if(c.earrings==='hoops')node('ellipse',{cx:x,cy:37,rx:10,ry:14,fill:'none',stroke:mode==='outline'?'#000000':o.colors.metal,'stroke-width':4},head);else ellipse(x,28,6,6,'metal',head);}
+ if(c.hat==='headband'){rect(-69,-48,138,23,'accessory',head);rect(-29,-48,58,23,'metal',head);line('M-13-36 L0-43 L13-36 L0-29Z',head);path('M65-36 L103-24 L85-11 L65-25Z','accessory',head);}
+ if(c.hat==='horns')for(const sign of [-1,1]){const g=group(`scale(${sign} 1)`,head);path('M36-66 Q30-98 56-123 Q47-94 66-72Z','horns',g);}
+ if(c.hat==='foxmask'){const g=group('translate(58 -67) rotate(25) scale(.65)',head);path('M-43 13 L-51-61 L-19-37 Q0-46 19-37 L51-61 L43 13 L0 48Z','detail',g);path('M-34-4 L-9 7 L-28 13Z','accessory',g);path('M34-4 L9 7 L28 13Z','accessory',g);path('M-8 26 L8 26 L0 35Z','eyes',g);}
+ if(c.headphones==='headset'){rect(65,-4,17,29,'accessory',head);line('M77 16 Q85 45 27 44',head);ellipse(25,44,9,5,'metal',head);}
  if(c.hat==='cap'){path('M-70-55 Q-65-116 0-105 Q66-110 70-55Z','accessory',head);path('M-67-54 Q-23-77 69-55 L93-42 Q20-34-67-54Z','detail',head);}
  if(c.hat==='beanie'){path('M-71-55 Q-76-127 0-117 Q76-127 71-55Z','accessory',head);rect(-73,-65,146,24,'detail',head,8);ellipse(0,-122,17,17,'accessory',head);}
  if(c.hat==='crown')path('M-51-72 L-58-113 L-25-95 L0-126 L25-95 L58-113 L51-72Z','metal',head);
@@ -104,6 +116,10 @@ export function paintAvatar(root,o,mode){
  if(c.headphones==='overear'){node('path',{d:'M-78 9 Q-104-101 0-103 Q104-101 78 9',fill:'none',stroke:mode==='outline'?'#000000':o.colors.accessory,'stroke-width':10},head);rect(-89,-11,22,45,'accessory',head,10);rect(67,-11,22,45,'accessory',head,10);}
  // Hand-held items use the same wrist anchor as each pose.
  if(c.handheld!=='none'){const x=(c.pose==='wave'?107:c.pose==='hips'?61:83)*b.width,y=c.pose==='wave'?-99:c.pose==='hips'?49:89,g=group(`translate(${x} ${y})`,whole);
+ if(c.handheld==='sword'){path('M-8-19 L-13-104 L0-132 L13-104 L8-19Z','wings',g);line('M0-119 L0-23',g);rect(-24,-20,48,9,'metal',g);rect(-6,-10,12,34,'accessory',g);star(0,-16,10,'metal',g);}
+ if(c.handheld==='fan'){path('M0 9 L-55-45 Q0-94 55-45Z','accessory',g);for(const dx of [-40,-20,0,20,40])line(`M0 9 L${dx} ${-61+Math.abs(dx)*.25}`,g);ellipse(0,9,6,6,'metal',g);}
+ if(c.handheld==='lightstick'){rect(-7,-30,14,51,'accessory',g);ellipse(0,-49,24,24,'wings',g);star(0,-49,16,'metal',g);}
+ if(c.handheld==='orb'){ellipse(0,-27,28,28,'wings',g);path('M8-48 Q-22-36-9-13 Q-29-23-16-44Z','detail',g);star(9,-24,12,'metal',g);}
  if(c.handheld==='mic'){rect(-6,-31,12,47,'metal',g);ellipse(0,-37,14,17,'eyes',g);}
  if(c.handheld==='wand'){rect(-3,-42,6,65,'detail',g);star(0,-53,22,'metal',g);}
  if(c.handheld==='flower'){rect(-3,-35,6,59,'horns',g);for(let i=0;i<5;i++)ellipse(Math.cos(i*1.257)*13,-43+Math.sin(i*1.257)*13,10,10,'accessory',g);ellipse(0,-43,7,7,'metal',g);}

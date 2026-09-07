@@ -37,7 +37,9 @@ class AvatarTests(TestCase):
         doc=avatar_document();del doc['objects'][0]['appearance']['choices']['hair']
         with self.assertRaises(ValueError):validate_document(doc)
     def test_save_reopen_scene_and_legacy(self):
-        for doc in [document(),avatar_document()]:
+        hunter=avatar_document()
+        hunter['objects'][0]['appearance']['choices'].update(hair='longbraid',top='hunter',handheld='sword',faceDetail='runes',hat='foxmask')
+        for doc in [document(),avatar_document(),hunter]:
             response=self.client.post('/api/projects/',data=json.dumps({'name':'Figur','document':doc}),content_type='application/json')
             self.assertEqual(response.status_code,201)
             p=response.json()

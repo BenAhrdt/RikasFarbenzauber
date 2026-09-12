@@ -60,7 +60,10 @@ class SpaceTests(TestCase):
         self.assertEqual(self.save('character',document()).status_code,201)
 
     def test_free_drawing_is_saved_and_reopened(self):
-        doc=space();doc['canvas']['plain']=True;doc['strokes']=[{'id':'line-one','color':'#7561be','width':9,'points':[[10,20],[30.5,40]]}]
+        doc=space();doc['canvas']['plain']=True;doc['strokes']=[
+            {'id':'line-one','color':'#7561be','width':9,'points':[[10,20],[30.5,40]]},
+            {'id':'shape-one','color':'#000000','width':4,'points':[[50,60],[150,160]],'kind':'rectangle','closed':True,'fill':'#edc56b'},
+        ]
         response=self.save('drawing',doc)
         self.assertEqual(response.status_code,201)
         saved=response.json()
@@ -73,6 +76,9 @@ class SpaceTests(TestCase):
             [{'id':'x','color':'red','width':9,'points':[[10,20]]}],
             [{'id':'x','color':'#112233','width':0,'points':[[10,20]]}],
             [{'id':'x','color':'#112233','width':9,'points':[[901,20]]}],
+            [{'id':'x','color':'#112233','width':9,'points':[[10,20],[30,40]],'kind':'star'}],
+            [{'id':'x','color':'#112233','width':9,'points':[[10,20],[30,40]],'kind':'circle','closed':False,'fill':'#ffffff'}],
+            [{'id':'x','color':'#112233','width':9,'points':[[10,20]],'closed':True,'fill':'orange'}],
         ]
         for strokes in cases:
             doc=space();doc['strokes']=strokes

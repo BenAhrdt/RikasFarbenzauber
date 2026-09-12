@@ -1,5 +1,12 @@
 # Änderungen
 
+## 0.5.10 – 12. September 2026
+
+- Zeichenwerkzeuge starten mit schwarzer Farbe und dünnem Strich.
+- Linie, Kreis, Dreieck und Rechteck ergänzen den freien Stift.
+- Ein Farbtopf füllt geschlossene eigene Konturen und vorhandene Farbflächen.
+- Drei Ausgabeansichten: Farbig, Ausmalbild nur mit schwarzen Konturen und Ausmalbild mit sichtbarer eigener Farbgestaltung.
+
 ## 0.5.9 – 12. September 2026
 
 - Die freie Zeichenfläche nutzt nun den großen Arbeitsbereich statt der schmalen Bausteinspalte.

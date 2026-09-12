@@ -64,18 +64,32 @@ def validate_document(doc):
         raise ValueError("Zu viele Zeichenlinien.")
     stroke_ids = set()
     for stroke in strokes:
-        if not isinstance(stroke, dict) or set(stroke) != {"id", "color", "width", "points"}:
+        required = {"id", "color", "width", "points"}
+        if not isinstance(stroke, dict) or not required <= set(stroke) or not set(stroke) <= required | {"kind", "closed", "fill"}:
             raise ValueError("Ungültige Zeichenlinie.")
         if not isinstance(stroke["id"], str) or not 1 <= len(stroke["id"]) <= 50 or stroke["id"] in stroke_ids or not color(stroke["color"]):
             raise ValueError("Ungültige Zeichenlinie.")
         stroke_ids.add(stroke["id"])
         if type(stroke["width"]) not in (int, float) or not 1 <= stroke["width"] <= 40:
             raise ValueError("Ungültige Strichstärke.")
+        kind = stroke.get("kind")
+        if kind is not None and kind not in {"line", "circle", "triangle", "rectangle"}:
+            raise ValueError("Ungültiges Zeichenwerkzeug.")
+        if "closed" in stroke and type(stroke["closed"]) is not bool:
+            raise ValueError("Ungültige Zeichenlinie.")
+        if kind in {"circle", "triangle", "rectangle"} and stroke.get("closed") is not True:
+            raise ValueError("Ungültige geschlossene Form.")
+        if kind == "line" and stroke.get("closed", False) is not False:
+            raise ValueError("Ungültige Linie.")
+        if "fill" in stroke and stroke["fill"] is not None and not color(stroke["fill"]):
+            raise ValueError("Ungültige Füllfarbe.")
         if not isinstance(stroke["points"], list) or not 1 <= len(stroke["points"]) <= 5000:
             raise ValueError("Ungültige Zeichenpunkte.")
         for point in stroke["points"]:
             if not isinstance(point, list) or len(point) != 2 or any(type(value) not in (int, float) or not math.isfinite(value) for value in point) or not 0 <= point[0] <= canvas["width"] or not 0 <= point[1] <= canvas["height"]:
                 raise ValueError("Ungültige Zeichenpunkte.")
+        if kind is not None and len(stroke["points"]) != 2:
+            raise ValueError("Ungültige Formpunkte.")
     return doc
 def color(value):
     return isinstance(value, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", value) is not None

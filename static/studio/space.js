@@ -23,7 +23,7 @@ function render(){
  const group=[...canvas.querySelectorAll('[data-object]')].find(g=>g.dataset.object===selectedId);
  if(group){const box=group.getBBox();const border=document.createElementNS(canvas.namespaceURI,'rect');for(const [k,v]of Object.entries({x:box.x-7,y:box.y-7,width:box.width+14,height:box.height+14,fill:'none',stroke:'#7561be','stroke-width':2,'stroke-dasharray':'7 5','pointer-events':'none',class:'selection-border'}))border.setAttribute(k,v);group.append(border);}
  $('#selection-label').textContent=kind==='drawing'?'Dein freies Zeichenblatt':o?`${library[o.asset]?.[0]||(o.asset==='photo-v1'?'Foto':'Figur')} ausgewählt · ${doc.objects.length}/100`:`${doc.objects.length}/100 Gegenstände · Antippen zum Auswählen`;
- $('#mode-label').textContent=mode()==='outline'?'Ausmalbild':'Farbig';
+ $('#mode-label').textContent=mode()==='outline'?'Ausmalbild':mode()==='outline-colored'?'Ausmalbild farbig':'Farbig';
  const previous=$('#part').value;$('#part').replaceChildren();for(const part of Object.keys(o?.colors||{}))$('#part').add(new Option(labels[part]||part,part));if(o?.colors[previous])$('#part').value=previous;
  for(const el of document.querySelectorAll('.transform-tools button,#custom-color,#part,.swatch'))el.disabled=!o;
  if(o)$('#custom-color').value=o.colors[$('#part').value];

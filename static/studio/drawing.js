@@ -1,0 +1,20 @@
+const NS='http://www.w3.org/2000/svg';
+const uid=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
+
+export function bindDrawing({canvas,getDocument,snapshot,commit,status}){
+ const toggle=document.createElement('button');toggle.id='drawing-toggle';toggle.className='secondary wide';toggle.setAttribute('aria-pressed','false');toggle.textContent='✏️ Frei malen';
+ const panel=document.createElement('div');panel.className='drawing-tools';panel.hidden=true;panel.innerHTML='<button data-drawing-tool="pen" aria-pressed="true">✏️ Stift</button><button data-drawing-tool="eraser" aria-pressed="false">⌫ Radierer</button><label>Farbe <input id="drawing-color" type="color" value="#7561be"></label><label>Strich <select id="drawing-size"><option value="4">Dünn</option><option value="9" selected>Mittel</option><option value="18">Dick</option></select></label><button id="clear-drawing" class="quiet">Malerei löschen</button>';
+ canvas.parentElement.after(toggle,panel);
+ let enabled=false,tool='pen',active=null,before=null,preview=null;
+ const color=document.querySelector('#drawing-color'),size=document.querySelector('#drawing-size');
+ const setEnabled=value=>{enabled=value;panel.hidden=!value;toggle.setAttribute('aria-pressed',String(value));toggle.textContent=value?'✓ Malen beenden':'✏️ Frei malen';canvas.classList.toggle('is-drawing',value);status.textContent=value?'Male mit Finger oder Stift direkt auf die Fläche.':'Gestalten ist wieder aktiv.';};
+ toggle.addEventListener('click',()=>setEnabled(!enabled));
+ panel.addEventListener('click',e=>{const next=e.target.closest('[data-drawing-tool]')?.dataset.drawingTool;if(!next)return;tool=next;panel.querySelectorAll('[data-drawing-tool]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.drawingTool===tool)));});
+ function point(e){return new DOMPoint(e.clientX,e.clientY).matrixTransform(canvas.getScreenCTM().inverse());}
+ function removeNear(p){const strokes=getDocument().strokes||[];for(let i=strokes.length-1;i>=0;i--)if(strokes[i].points.some(q=>Math.hypot(q[0]-p.x,q[1]-p.y)<Math.max(12,strokes[i].width))){strokes.splice(i,1);return true;}return false;}
+ canvas.addEventListener('pointerdown',e=>{if(!enabled)return;e.preventDefault();e.stopImmediatePropagation();canvas.setPointerCapture(e.pointerId);before=snapshot();const p=point(e);if(tool==='eraser'){active={pointer:e.pointerId,erased:removeNear(p)};if(active.erased)commit(before);before=snapshot();return;}const stroke={id:uid(),color:color.value,width:Number(size.value),points:[[+p.x.toFixed(1),+p.y.toFixed(1)]]};getDocument().strokes??=[];getDocument().strokes.push(stroke);active={pointer:e.pointerId,stroke};preview=document.createElementNS(NS,'path');for(const [k,v]of Object.entries({fill:'none',stroke:stroke.color,'stroke-width':stroke.width,'stroke-linecap':'round','stroke-linejoin':'round','pointer-events':'none'}))preview.setAttribute(k,v);canvas.append(preview);},{capture:true});
+ canvas.addEventListener('pointermove',e=>{if(!enabled||!active||active.pointer!==e.pointerId)return;e.preventDefault();e.stopImmediatePropagation();const p=point(e);if(tool==='eraser'){if(removeNear(p)){active.erased=true;commit(before);before=snapshot();}return;}const pts=active.stroke.points,last=pts[pts.length-1];if(pts.length>=5000||Math.hypot(p.x-last[0],p.y-last[1])<2)return;pts.push([+p.x.toFixed(1),+p.y.toFixed(1)]);preview.setAttribute('d',pts.map((q,i)=>`${i?'L':'M'}${q[0]} ${q[1]}`).join(' '));},{capture:true});
+ function end(e){if(!active||active.pointer!==e.pointerId)return;e.stopImmediatePropagation();if(active.stroke)commit(before);active=null;preview=null;before=null;}
+ for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(event,end,{capture:true});
+ panel.querySelector('#clear-drawing').addEventListener('click',()=>{if(!(getDocument().strokes||[]).length)return;const old=snapshot();getDocument().strokes=[];commit(old);status.textContent='Deine Malerei wurde gelöscht. Mit „Zurück“ holst du sie wieder.';});
+}

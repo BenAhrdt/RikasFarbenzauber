@@ -4,9 +4,11 @@ import {draw,svgElement} from './figure.js';
 import {library,object,template,spaceDocument,uid} from './objects.js';
 import {api} from './api.js';
 import {bindExports} from './export.js';
+import {bindDrawing} from './drawing.js';
 const $=s=>document.querySelector(s),canvas=$('#canvas'),status=$('#status'),name=$('#project-name');
 const kind=$('.space-editor').dataset.kind;
 let project=JSON.parse($('#project-data').textContent),doc=project?.document||template(kind==='room'?'room':kind==='world'?'garden':'empty');
+if(!project&&kind==='drawing'){doc=spaceDocument('drawing');name.value='Meine Zeichnung';}
 let selectedId=null,drag=null,dirty=false,undo=[],redo=[];
 if(project)name.value=project.name;
 const selected=()=>doc.objects.find(o=>o.id===selectedId),mode=()=>$('#mode').value;
@@ -20,7 +22,7 @@ function render(){
  $('#photo-options').hidden=o?.asset!=='photo-v1';
  const group=[...canvas.querySelectorAll('[data-object]')].find(g=>g.dataset.object===selectedId);
  if(group){const box=group.getBBox();const border=document.createElementNS(canvas.namespaceURI,'rect');for(const [k,v]of Object.entries({x:box.x-7,y:box.y-7,width:box.width+14,height:box.height+14,fill:'none',stroke:'#7561be','stroke-width':2,'stroke-dasharray':'7 5','pointer-events':'none',class:'selection-border'}))border.setAttribute(k,v);group.append(border);}
- $('#selection-label').textContent=o?`${library[o.asset]?.[0]||(o.asset==='photo-v1'?'Foto':'Figur')} ausgewählt · ${doc.objects.length}/100`:`${doc.objects.length}/100 Gegenstände · Antippen zum Auswählen`;
+ $('#selection-label').textContent=kind==='drawing'?'Dein freies Zeichenblatt':o?`${library[o.asset]?.[0]||(o.asset==='photo-v1'?'Foto':'Figur')} ausgewählt · ${doc.objects.length}/100`:`${doc.objects.length}/100 Gegenstände · Antippen zum Auswählen`;
  $('#mode-label').textContent=mode()==='outline'?'Ausmalbild':'Farbig';
  const previous=$('#part').value;$('#part').replaceChildren();for(const part of Object.keys(o?.colors||{}))$('#part').add(new Option(labels[part]||part,part));if(o?.colors[previous])$('#part').value=previous;
  for(const el of document.querySelectorAll('.transform-tools button,#custom-color,#part,.swatch'))el.disabled=!o;
@@ -57,6 +59,8 @@ name.addEventListener('input',()=>{dirty=true;status.textContent='Noch nicht ges
 document.querySelectorAll('[data-template]').forEach(b=>b.addEventListener('click',async()=>{if(doc.objects.length&&!await ask('Die neue Vorlage ersetzt deine Arbeitsfläche. Mit „Zurück“ kannst du sie wiederherstellen.',{title:'Vorlage übernehmen?',accept:'Vorlage übernehmen',cancel:'Weiter gestalten'}))return;mutate(()=>{doc=b.dataset.template==='empty'?spaceDocument(kind):template(b.dataset.template);selectedId=null;});}));
 $('#save').addEventListener('click',async()=>{if(!name.value.trim()){status.textContent='Gib deinem Projekt bitte einen Namen.';name.focus();return;}const button=$('#save'),saved=snapshot(),savedName=name.value;button.disabled=true;status.textContent='Wird gespeichert …';try{project=await api(project?`/api/projects/${project.id}/`:'/api/projects/',project?'PUT':'POST',{name:savedName,kind,document:JSON.parse(saved),revision:project?.revision});history.replaceState(null,'',`/editor/${project.id}/`);dirty=snapshot()!==saved||name.value!==savedName;status.textContent=dirty?'Gespeichert. Neueste Änderungen bitte noch speichern.':'✓ Gespeichert! Dein Projekt wartet auf dich.';}catch(e){status.textContent=e.message;}finally{button.disabled=false;}});
 $('#load-projects').addEventListener('click',async()=>{const button=$('#load-projects');button.disabled=true;try{const data=await api('/api/projects/');$('#saved-library').replaceChildren();for(const saved of data.projects){if(saved.id===project?.id)continue;const b=document.createElement('button');b.className='quiet wide';b.textContent=saved.name;b.addEventListener('click',()=>{if(doc.objects.length+saved.document.objects.length>100){status.textContent='Dafür ist die Fläche zu voll (maximal 100 Gegenstände).';return;}mutate(()=>{for(const source of saved.document.objects){const copy=JSON.parse(JSON.stringify(source));copy.id=uid();if(saved.kind==='character'){copy.x=450;copy.y=400;copy.scale=.65;}doc.objects.push(copy);selectedId=copy.id;}});});$('#saved-library').append(b);if(saved.document.version===2){const base=document.createElement('button');base.className='quiet wide';base.textContent=saved.name+' als Grundlage';base.addEventListener('click',async()=>{if(doc.objects.length&&!await ask('Diese Grundlage ersetzt deine Arbeitsfläche. Mit „Zurück“ kannst du sie wiederherstellen.',{title:'Grundlage übernehmen?',accept:'Übernehmen',cancel:'Weiter gestalten'}))return;mutate(()=>{doc=JSON.parse(JSON.stringify(saved.document));doc.objects.forEach(o=>o.id=uid());selectedId=null;});});$('#saved-library').append(base);}}if(!$('#saved-library').children.length)$('#saved-library').textContent='Noch keine anderen Projekte gespeichert.';}catch(e){status.textContent=e.message;}finally{button.disabled=false;}});
+bindDrawing({canvas,getDocument:()=>doc,snapshot,commit:before=>{record(before);changed();},status});
+if(kind==='drawing'){$('.library-panel').hidden=true;$('.transform-tools').hidden=true;$('#drawing-toggle').click();}
 bindExports(()=>doc,()=>name.value,mode,status);
 guardNavigation(()=>dirty);
 bindPhotos({status,selected,mutate,

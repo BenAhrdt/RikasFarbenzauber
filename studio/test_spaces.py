@@ -58,3 +58,22 @@ class SpaceTests(TestCase):
         doc=space();doc['objects']=[document()['objects'][0],{**item(),'id':'house'}]
         self.assertEqual(self.save('scene',doc).status_code,201)
         self.assertEqual(self.save('character',document()).status_code,201)
+
+    def test_free_drawing_is_saved_and_reopened(self):
+        doc=space();doc['canvas']['plain']=True;doc['strokes']=[{'id':'line-one','color':'#7561be','width':9,'points':[[10,20],[30.5,40]]}]
+        response=self.save('drawing',doc)
+        self.assertEqual(response.status_code,201)
+        saved=response.json()
+        self.assertEqual(saved['document']['strokes'],doc['strokes'])
+        self.assertContains(self.client.get('/?kind=drawing'),'Zeichnung')
+        self.assertContains(self.client.get(f"/editor/{saved['id']}/"),'data-kind="drawing"')
+
+    def test_invalid_drawing_data_is_rejected(self):
+        cases=[
+            [{'id':'x','color':'red','width':9,'points':[[10,20]]}],
+            [{'id':'x','color':'#112233','width':0,'points':[[10,20]]}],
+            [{'id':'x','color':'#112233','width':9,'points':[[901,20]]}],
+        ]
+        for strokes in cases:
+            doc=space();doc['strokes']=strokes
+            self.assertEqual(self.save('drawing',doc).status_code,400)

@@ -7,11 +7,14 @@ CATALOG = json.loads((Path(__file__).resolve().parent.parent / "static/studio/av
 PARTS = {"skin", "hair", "shirt", "trousers", "shoes", "eyes", "horns"}
 ASSETS = {"poster-v1", "lightstick-v1", "stage-v1", "spotlight-v1", "keyboard-v1", "headphones-v1", "lantern-v1", "ramen-v1", "catplush-v1", "gamepad-v1", "mirror-v1", "stringlights-v1", "chair-v1", "desk-v1", "pillow-v1", "clock-v1", "books-v1", "teddy-v1", "guitar-v1", "microphone-v1", "speaker-v1", "skateboard-v1", "balloon-v1", "ball-v1", "mushroom-v1", "pond-v1", "tent-v1", "bench-v1","photo-v1","sofa-v1", "bed-v1", "table-v1", "shelf-v1", "rug-v1", "lamp-v1", "window-v1", "door-v1", "house-v1", "castle-v1", "tree-v1", "flower-v1", "cloud-v1", "rock-v1", "plant-v1", "sun-v1"}
 def validate_document(doc):
-    if not isinstance(doc, dict) or set(doc) != {"version", "canvas", "objects"} or type(doc["version"]) is not int or doc["version"] not in (1, 2):
+    if not isinstance(doc, dict) or set(doc) not in ({"version", "canvas", "objects"}, {"version", "canvas", "objects", "strokes"}) or type(doc["version"]) is not int or doc["version"] not in (1, 2):
         raise ValueError("Unbekanntes Projektformat.")
     version = doc["version"]
     canvas = doc["canvas"]
-    if not isinstance(canvas, dict) or set(canvas) != ({"width", "height", "background"} if version == 1 else {"width", "height", "background", "ground"}) or canvas["width"] != (600 if version == 1 else 900) or canvas["height"] != 650 or not color(canvas["background"]):
+    canvas_fields = {"width", "height", "background"} if version == 1 else {"width", "height", "background", "ground"}
+    if not isinstance(canvas, dict) or set(canvas) not in (canvas_fields, canvas_fields | {"plain"}) or canvas["width"] != (600 if version == 1 else 900) or canvas["height"] != 650 or not color(canvas["background"]):
+        raise ValueError("Ungültige Arbeitsfläche.")
+    if "plain" in canvas and (version != 2 or canvas["plain"] is not True):
         raise ValueError("Ungültige Arbeitsfläche.")
     if version == 2 and not color(canvas["ground"]):
         raise ValueError("Ungültige Bodenfarbe.")
@@ -56,6 +59,23 @@ def validate_document(doc):
                 raise ValueError("Ungültige Position oder Größe.")
         if not isinstance(obj["colors"], dict) or set(obj["colors"]) != (PARTS if obj["asset"] == "sprout-v1" else set(CATALOG["colors"]) if obj["asset"] == "avatar-v2" else {"main", "detail", "accent"}) or not all(color(c) for c in obj["colors"].values()):
             raise ValueError("Ungültige Farben.")
+    strokes = doc.get("strokes", [])
+    if not isinstance(strokes, list) or len(strokes) > 500:
+        raise ValueError("Zu viele Zeichenlinien.")
+    stroke_ids = set()
+    for stroke in strokes:
+        if not isinstance(stroke, dict) or set(stroke) != {"id", "color", "width", "points"}:
+            raise ValueError("Ungültige Zeichenlinie.")
+        if not isinstance(stroke["id"], str) or not 1 <= len(stroke["id"]) <= 50 or stroke["id"] in stroke_ids or not color(stroke["color"]):
+            raise ValueError("Ungültige Zeichenlinie.")
+        stroke_ids.add(stroke["id"])
+        if type(stroke["width"]) not in (int, float) or not 1 <= stroke["width"] <= 40:
+            raise ValueError("Ungültige Strichstärke.")
+        if not isinstance(stroke["points"], list) or not 1 <= len(stroke["points"]) <= 5000:
+            raise ValueError("Ungültige Zeichenpunkte.")
+        for point in stroke["points"]:
+            if not isinstance(point, list) or len(point) != 2 or any(type(value) not in (int, float) or not math.isfinite(value) for value in point) or not 0 <= point[0] <= canvas["width"] or not 0 <= point[1] <= canvas["height"]:
+                raise ValueError("Ungültige Zeichenpunkte.")
     return doc
 def color(value):
     return isinstance(value, str) and re.fullmatch(r"#[0-9a-fA-F]{6}", value) is not None

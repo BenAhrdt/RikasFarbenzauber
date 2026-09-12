@@ -5,15 +5,17 @@ from .models import UserAccess
 
 FIELDS = {'characters':'Figuren', 'rooms':'Räume & Häuser', 'worlds':'Orte & Welten',
           'scenes':'Szenen', 'photos':'Fotos hochladen und Fotobibliothek benutzen', 'delete_projects':'Eigene Projekte und Fotos löschen'}
-KINDS = {'character':'characters', 'room':'rooms', 'world':'worlds', 'scene':'scenes'}
+KINDS = {'character':'characters', 'room':'rooms', 'world':'worlds', 'scene':'scenes', 'drawing':'drawing'}
 
 def capabilities(user):
     if not user.is_authenticated:
         return {key:False for key in FIELDS}
     if user.is_superuser:
-        return {key:True for key in FIELDS}
+        return {**{key:True for key in FIELDS}, 'drawing':True}
     access=UserAccess.objects.filter(user=user).first()
-    return {key:getattr(access,key,True) for key in FIELDS}
+    rights={key:getattr(access,key,True) for key in FIELDS}
+    rights['drawing']=any(rights[key] for key in ('characters','rooms','worlds','scenes'))
+    return rights
 
 def require(user, capability):
     if not capabilities(user).get(capability,False):

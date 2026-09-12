@@ -3,6 +3,7 @@ import {draw,newDocument,svgElement} from './figure.js';
 import {catalog,defaultAppearance,avatarColors,upgrade} from './avatar.js';
 import {api} from './api.js';
 import {bindExports} from './export.js';
+import {bindDrawing} from './drawing.js';
 const $=s=>document.querySelector(s);
 let project=JSON.parse($('#project-data').textContent),doc=project?.document||newDocument(),dirty=false;
 const canvas=$('#canvas'),name=$('#project-name'),status=$('#status');
@@ -43,4 +44,5 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])canvas.add
 canvas.addEventListener('keydown',e=>{const delta={ArrowLeft:[-5,0],ArrowRight:[5,0],ArrowUp:[0,-5],ArrowDown:[0,5]}[e.key];if(!delta)return;e.preventDefault();mutate(()=>{selected.x=Math.max(0,Math.min(600,selected.x+delta[0]));selected.y=Math.max(0,Math.min(650,selected.y+delta[1]));});});
 document.querySelector('.transform-tools').addEventListener('click',e=>{const action=e.target.closest('[data-action]')?.dataset.action;if(!action)return;mutate(()=>{if(action==='smaller')selected.scale=Math.max(.3,selected.scale-.1);if(action==='larger')selected.scale=Math.min(1.8,selected.scale+.1);if(action==='rotate')selected.rotation=selected.rotation>=180?-165:selected.rotation+15;if(action==='flip')selected.flipped=!selected.flipped;if(action==='reset')Object.assign(selected,{x:300,y:340,rotation:0,scale:1,flipped:false});});});
 $('#save').addEventListener('click',async()=>{if(!name.value.trim()){status.textContent='Gib deiner Figur bitte einen Namen.';name.focus();return;}const button=$('#save');button.disabled=true;status.textContent='Wird gespeichert …';const saved=snapshot(),savedName=name.value;try{project=await api(project?`/api/projects/${project.id}/`:'/api/projects/',project?'PUT':'POST',{name:savedName,document:JSON.parse(saved),revision:project?.revision});dirty=snapshot()!==saved||name.value!==savedName;history.replaceState(null,'',`/editor/${project.id}/`);status.textContent=dirty?'Gespeichert. Deine neuesten Änderungen bitte noch speichern.':'✓ Gespeichert! Dein Freund wartet auf dich.';}catch(e){status.textContent=e.message;}finally{button.disabled=false;}});
+bindDrawing({canvas,getDocument:()=>doc,snapshot,commit:before=>{record(before);change();},status});
 bindExports(()=>doc,()=>name.value,mode,status);guardNavigation(()=>dirty);options();render();

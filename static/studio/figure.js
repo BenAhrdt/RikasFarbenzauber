@@ -8,7 +8,7 @@ function node(tag,attrs){const n=document.createElementNS(NS,tag);for(const [k,v
 export function draw(svg,doc,mode='color'){
  svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${doc.canvas.width} ${doc.canvas.height}`);
  svg.append(node('rect',{width:doc.canvas.width,height:doc.canvas.height,fill:mode==='outline'?'#ffffff':doc.canvas.background}));
- if(doc.version===2)svg.append(node('rect',{x:0,y:420,width:doc.canvas.width,height:230,fill:mode==='outline'?'#ffffff':doc.canvas.ground,stroke:mode==='outline'?'#000000':'#a99c8c','stroke-width':2}));
+ if(doc.version===2&&!doc.canvas.plain)svg.append(node('rect',{x:0,y:420,width:doc.canvas.width,height:230,fill:mode==='outline'?'#ffffff':doc.canvas.ground,stroke:mode==='outline'?'#000000':'#a99c8c','stroke-width':2}));
  for(const o of doc.objects){
   const g=node('g',{'data-object':o.id,transform:`translate(${o.x} ${o.y}) rotate(${o.rotation}) scale(${o.flipped?-o.scale:o.scale} ${o.scale})`,'stroke':mode==='outline'?'#000000':'#494052','stroke-width':3.5,'stroke-linejoin':'round','stroke-linecap':'round'});svg.append(g);
   const shape=(tag,attrs,part)=>{const n=node(tag,{...attrs,fill:mode==='outline'?'#ffffff':o.colors[part],'data-part':part});g.append(n);return n;};
@@ -37,6 +37,12 @@ export function draw(svg,doc,mode='color'){
   if(o.variant===2){shape('path',{d:'M-70-175 L-76-217 Q-43-215-38-190 M70-175 L76-217 Q43-215 38-190'},'horns');}
   shape('ellipse',{cx:-27,cy:-95,rx:8,ry:12},'eyes');shape('ellipse',{cx:27,cy:-95,rx:8,ry:12},'eyes');
   g.append(node('path',{d:'M-14-64 Q0-50 14-64 M-3-82 L-6-74 L2-74',fill:'none'}));
+ }
+ for(const stroke of doc.strokes||[]){
+  if(!stroke.points?.length)continue;
+  const points=stroke.points.length===1?[stroke.points[0],[stroke.points[0][0]+.01,stroke.points[0][1]]]:stroke.points;
+  const d=points.map((p,i)=>`${i?'L':'M'}${p[0]} ${p[1]}`).join(' ');
+  svg.append(node('path',{d,fill:'none',stroke:stroke.color,'stroke-width':stroke.width,'stroke-linecap':'round','stroke-linejoin':'round','data-stroke':stroke.id,'pointer-events':'none'}));
  }
 }
 export function svgElement(doc,mode='color'){const svg=node('svg',{xmlns:NS,width:doc.canvas.width*2,height:doc.canvas.height*2});draw(svg,doc,mode);return svg;}

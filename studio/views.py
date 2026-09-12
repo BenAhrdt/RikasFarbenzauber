@@ -44,18 +44,18 @@ def login_view(request):
 @login_required
 def dashboard(request):
     kind = request.GET.get("kind", "character")
-    if kind not in ("character", "room", "world", "scene"):
+    if kind not in ("character", "room", "world", "scene", "drawing"):
         kind = "character"
     allowed = allowed_kinds(request.user)
     if kind not in allowed:
         kind = allowed[0] if allowed else "character"
-    labels = {"character": "Figur", "room": "Raum oder Haus", "world": "Ort", "scene": "Szene"}
+    labels = {"character": "Figur", "room": "Raum oder Haus", "world": "Ort", "scene": "Szene", "drawing": "Zeichnung"}
     return render(request, "dashboard.html", {"projects": Project.objects.filter(owner=request.user, kind=kind, kind__in=allowed), "kind": kind, "kind_label": labels[kind]})
 @login_required
 def editor(request, pk=None):
     project = get_object_or_404(Project, pk=pk, owner=request.user) if pk else None
     kind = project.kind if project else request.GET.get("kind", "character")
-    if kind not in ("character", "room", "world", "scene"):
+    if kind not in ("character", "room", "world", "scene", "drawing"):
         kind = "character"
     require(request.user, KINDS[kind])
     return render(request, "editor.html" if kind == "character" else "space.html", {"project_data": serialize(project) if project else None, "kind": kind})
@@ -67,7 +67,7 @@ def payload(request, kind=None):
         if not isinstance(data, dict) or not isinstance(data.get("name"), str) or not 1 <= len(data["name"].strip()) <= 80:
             raise ValueError("Bitte gib einen Namen mit 1 bis 80 Zeichen ein.")
         kind = kind or data.get("kind", "character")
-        if kind not in ("character", "room", "world", "scene"):
+        if kind not in ("character", "room", "world", "scene", "drawing"):
             raise ValueError("Unbekannter Projekttyp.")
         validate_document(data.get("document"))
         if data["document"]["version"] != (1 if kind == "character" else 2):

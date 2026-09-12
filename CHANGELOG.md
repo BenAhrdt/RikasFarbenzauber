@@ -1,5 +1,11 @@
 # Änderungen
 
+## 0.5.8 – 12. September 2026
+
+- Freies Malen mit Stift, Radierer, eigener Farbe und drei Strichstärken in Figuren, Räumen, Welten und Szenen.
+- Neuer Projektbereich „Freies Malen“ mit leerem Zeichenblatt.
+- Gemalte Linien werden als Vektoren gespeichert und in PNG, SVG, Ausmalbild und Druck-PDF übernommen.
+
 ## 0.5.7 – 7. September 2026
 
 - Vier neue K-Pop-/Anime-inspirierte Figurenideen und 16 kombinierbare Optionen für Frisuren, Kleidung, magische Accessoires und Bühnenausstattung.

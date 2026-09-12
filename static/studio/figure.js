@@ -40,10 +40,11 @@ export function draw(svg,doc,mode='color'){
   shape('ellipse',{cx:-27,cy:-95,rx:8,ry:12},'eyes');shape('ellipse',{cx:27,cy:-95,rx:8,ry:12},'eyes');
   g.append(node('path',{d:'M-14-64 Q0-50 14-64 M-3-82 L-6-74 L2-74',fill:'none'}));
  }
- for(const stroke of doc.strokes||[]){
+ const drawingLayers=[...(doc.strokes||[])].sort((a,b)=>(b.fillOnly?1:0)-(a.fillOnly?1:0));
+ for(const stroke of drawingLayers){
   if(!stroke.points?.length)continue;
   const monochrome=mode==='outline';
-  svg.append(node('path',{d:drawingPath(stroke),fill:monochrome?(stroke.closed?'#ffffff':'none'):(stroke.fill||'none'),stroke:monochrome?'#000000':stroke.color,'stroke-width':stroke.width,'stroke-linecap':'round','stroke-linejoin':'round','data-stroke':stroke.id,'pointer-events':'none'}));
+  svg.append(node('path',{d:drawingPath(stroke),fill:monochrome?(stroke.closed?'#ffffff':'none'):(stroke.fill||'none'),stroke:stroke.fillOnly?'none':monochrome?'#000000':stroke.color,'stroke-width':stroke.width,'stroke-linecap':'round','stroke-linejoin':'round','data-stroke':stroke.id,'pointer-events':'none'}));
  }
 }
 export function svgElement(doc,mode='color'){const svg=node('svg',{xmlns:NS,width:doc.canvas.width*2,height:doc.canvas.height*2});draw(svg,doc,mode);return svg;}

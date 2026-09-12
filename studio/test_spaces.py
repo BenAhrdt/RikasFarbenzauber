@@ -63,6 +63,7 @@ class SpaceTests(TestCase):
         doc=space();doc['canvas']['plain']=True;doc['strokes']=[
             {'id':'line-one','color':'#7561be','width':9,'points':[[10,20],[30.5,40]]},
             {'id':'shape-one','color':'#000000','width':4,'points':[[50,60],[150,160]],'kind':'rectangle','closed':True,'fill':'#edc56b'},
+            {'id':'fill-one','color':'#edc56b','width':1,'points':[[200,200],[300,200],[250,300]],'kind':'polygon','closed':True,'fill':'#edc56b','fillOnly':True},
         ]
         response=self.save('drawing',doc)
         self.assertEqual(response.status_code,201)

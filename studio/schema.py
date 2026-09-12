@@ -65,7 +65,7 @@ def validate_document(doc):
     stroke_ids = set()
     for stroke in strokes:
         required = {"id", "color", "width", "points"}
-        if not isinstance(stroke, dict) or not required <= set(stroke) or not set(stroke) <= required | {"kind", "closed", "fill"}:
+        if not isinstance(stroke, dict) or not required <= set(stroke) or not set(stroke) <= required | {"kind", "closed", "fill", "fillOnly"}:
             raise ValueError("Ungültige Zeichenlinie.")
         if not isinstance(stroke["id"], str) or not 1 <= len(stroke["id"]) <= 50 or stroke["id"] in stroke_ids or not color(stroke["color"]):
             raise ValueError("Ungültige Zeichenlinie.")
@@ -73,22 +73,24 @@ def validate_document(doc):
         if type(stroke["width"]) not in (int, float) or not 1 <= stroke["width"] <= 40:
             raise ValueError("Ungültige Strichstärke.")
         kind = stroke.get("kind")
-        if kind is not None and kind not in {"line", "circle", "triangle", "rectangle"}:
+        if kind is not None and kind not in {"line", "circle", "triangle", "rectangle", "polygon"}:
             raise ValueError("Ungültiges Zeichenwerkzeug.")
         if "closed" in stroke and type(stroke["closed"]) is not bool:
             raise ValueError("Ungültige Zeichenlinie.")
-        if kind in {"circle", "triangle", "rectangle"} and stroke.get("closed") is not True:
+        if kind in {"circle", "triangle", "rectangle", "polygon"} and stroke.get("closed") is not True:
             raise ValueError("Ungültige geschlossene Form.")
         if kind == "line" and stroke.get("closed", False) is not False:
             raise ValueError("Ungültige Linie.")
         if "fill" in stroke and stroke["fill"] is not None and not color(stroke["fill"]):
             raise ValueError("Ungültige Füllfarbe.")
+        if "fillOnly" in stroke and (stroke["fillOnly"] is not True or kind != "polygon" or not color(stroke.get("fill"))):
+            raise ValueError("Ungültige Flächenfüllung.")
         if not isinstance(stroke["points"], list) or not 1 <= len(stroke["points"]) <= 5000:
             raise ValueError("Ungültige Zeichenpunkte.")
         for point in stroke["points"]:
             if not isinstance(point, list) or len(point) != 2 or any(type(value) not in (int, float) or not math.isfinite(value) for value in point) or not 0 <= point[0] <= canvas["width"] or not 0 <= point[1] <= canvas["height"]:
                 raise ValueError("Ungültige Zeichenpunkte.")
-        if kind is not None and len(stroke["points"]) != 2:
+        if kind in {"line", "circle", "triangle", "rectangle"} and len(stroke["points"]) != 2 or kind == "polygon" and len(stroke["points"]) < 3:
             raise ValueError("Ungültige Formpunkte.")
     return doc
 def color(value):

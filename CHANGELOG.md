@@ -1,5 +1,10 @@
 # Änderungen
 
+## 0.5.11 – 12. September 2026
+
+- Der Farbtopf erkennt geschlossene Flächen nun auch dann, wenn sie aus mehreren sich kreuzenden Einzelstrichen oder Linien bestehen.
+- Ist die angetippte Fläche nicht geschlossen, werden offene Endpunkte auf dem Zeichenblatt sichtbar markiert.
+
 ## 0.5.10 – 12. September 2026
 
 - Zeichenwerkzeuge starten mit schwarzer Farbe und dünnem Strich.

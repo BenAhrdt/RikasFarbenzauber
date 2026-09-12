@@ -1,5 +1,10 @@
 # Änderungen
 
+## 0.5.9 – 12. September 2026
+
+- Die freie Zeichenfläche nutzt nun den großen Arbeitsbereich statt der schmalen Bausteinspalte.
+- Raum- und Gegenstandsoptionen sind beim freien Zeichnen ausgeblendet; Papierfarbe und Export bleiben erreichbar.
+
 ## 0.5.8 – 12. September 2026
 
 - Freies Malen mit Stift, Radierer, eigener Farbe und drei Strichstärken in Figuren, Räumen, Welten und Szenen.
